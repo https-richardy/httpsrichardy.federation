@@ -1,0 +1,19 @@
+# this service provisions a mongo database container for local development and testing,
+# using environment variables defined in .env to set up authentication.
+
+services:
+  federation.infrastructure.mongo.database:
+    container_name: "federation.database"
+    image: mongo:latest
+    env_file:
+      - .env
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    volumes:
+      - federation.infrastructure.mongo.database:/data/db
+
+volumes:
+  federation.infrastructure.mongo.database:

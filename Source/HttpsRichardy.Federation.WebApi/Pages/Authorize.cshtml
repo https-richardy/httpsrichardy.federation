@@ -1,0 +1,97 @@
+@page "/oauth2/authorize"
+@model HttpsRichardy.Federation.WebApi.Pages.AuthorizePage
+
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+<div class="min-h-screen flex">
+    <div class="w-full lg:w-1/2 flex items-center justify-center bg-white px-4 py-8 lg:py-0">
+        <div class="w-full max-w-md px-4 lg:px-8">
+            @if (
+                ViewData.ModelState.ContainsKey(RealmErrors.RealmDoesNotExist.Code) ||
+                ViewData.ModelState.ContainsKey(AuthorizationErrors.RedirectUriNotAllowed.Code)
+            )
+            {
+                <div class="mb-8 p-6 flex flex-col items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-black mb-3" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <h1 class="text-xl font-semibold text-black mb-2 text-center">Unable to connect</h1>
+                    <p class="text-gray-500 text-center text-sm">We couldn't connect with the partner application.</p>
+                    <p class="text-gray-400 text-center text-xs mt-1">Please check the link or contact support if the problem persists.</p>
+                </div>
+            }
+            else
+            {
+                <div class="mb-8">
+                    <h1 class="text-3xl lg:text-4xl font-bold text-black leading-tight">Hello,<br/>Welcome Back</h1>
+                    <p class="text-gray-500 text-sm mt-3">Hey, welcome back to your special place</p>
+                </div>
+
+                <form method="post" class="space-y-5">
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden" asp-for="Parameters.RedirectUri" />
+                    <input type="hidden" asp-for="Parameters.State" />
+
+                    <div>
+                        <input name="Credentials.Username" id="username" type="text" autocomplete="username"
+                            class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition-colors"
+                            placeholder="Username" required />
+                    </div>
+
+                    <div>
+                        <input name="Credentials.Password" id="password" type="password" autocomplete="current-password"
+                            class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition-colors"
+                            placeholder="Password" required />
+                    </div>
+
+                    <button type="submit"
+                        class="w-full lg:w-auto bg-black text-white font-medium py-3 px-8 rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-colors">
+                        Continue
+                    </button>
+                </form>
+
+                <p class="hidden lg:block text-sm text-gray-500 mt-8">
+                    Don't have an account? <a href="#" class="text-black font-medium hover:underline">Sign Up</a>
+                </p>
+
+                <p class="text-xs text-gray-400 mt-8 flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 3l7 4v5c0 5.25-3.5 9.74-7 11-3.5-1.26-7-5.75-7-11V7l7-4z" />
+                    </svg>
+                    protected by OAuth 2.0
+                </p>
+            }
+        </div>
+    </div>
+
+    <div class="hidden lg:flex w-1/2 bg-gray-900 items-center justify-center relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10">
+            <svg class="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <defs>
+                    <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+                        <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" stroke-width="0.5"/>
+                    </pattern>
+                </defs>
+                <rect width="100" height="100" fill="url(#grid)" />
+            </svg>
+        </div>
+
+        <div class="relative z-10 flex flex-col items-center text-center px-12">
+            <div class="mt-12">
+                <h2 class="text-2xl font-semibold text-white mb-2">Authorize application</h2>
+                <p class="text-gray-400 text-sm max-w-xs">
+                    This application is requesting permission to access your account.
+                </p>
+            </div>
+        </div>
+
+        <div class="absolute top-20 left-20 w-32 h-32 border border-gray-700 rounded-full opacity-30"></div>
+        <div class="absolute bottom-20 right-20 w-48 h-48 border border-gray-700 rounded-full opacity-20"></div>
+        <div class="absolute top-1/2 left-10 w-16 h-16 border border-gray-700 rounded-full opacity-40"></div>
+    </div>
+</div>

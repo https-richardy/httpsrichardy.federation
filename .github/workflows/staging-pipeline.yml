@@ -1,0 +1,74 @@
+# we stop the application by uploading an app_offline.htm file
+# then we wait for a few seconds to let IIS unload the application and release file locks
+
+# https://learn.microsoft.com/en-us/aspnet/core/host-and-deploy/app-offline?view=aspnetcore-10.0
+
+name: staging deploy
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+
+      - name: setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: publish application
+        run: |
+          dotnet publish Source/HttpsRichardy.Federation.WebApi \
+            -c Release \
+            -r win-x64 \
+            -o ./publish
+
+      - name: remove unwanted config files
+        run: |
+          rm -f ./publish/appsettings.json
+          rm -f ./publish/appsettings.Development.json
+          rm -f ./publish/web.config
+
+      - name: put application offline
+        run: echo "offline" > app_offline.htm
+
+      - name: upload app_offline.htm
+        run: |
+          sudo apt-get install -y lftp
+          lftp -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASSWORD }} vinder-federation.somee.com <<EOF
+          cd /www.vinder-federation.somee.com/
+          put app_offline.htm
+          quit
+          EOF
+
+      - name: wait for IIS
+        run: sleep 10
+
+      - name: deploy publish via FTP (no delete)
+        run: |
+          lftp -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASSWORD }} vinder-federation.somee.com <<EOF
+          set ftp:ssl-allow no
+          set ftp:chmod false
+          set mirror:set-permissions false
+          set mirror:use-pget-n false
+
+          mirror -R ./publish /www.vinder-federation.somee.com \
+            --only-newer \
+            --verbose
+
+          quit
+          EOF
+
+      - name: remove app_offline.htm
+        run: |
+          lftp -u ${{ secrets.FTP_USER }},${{ secrets.FTP_PASSWORD }} vinder-federation.somee.com <<EOF
+          cd /www.vinder-federation.somee.com/
+          rm app_offline.htm
+          quit
+          EOF

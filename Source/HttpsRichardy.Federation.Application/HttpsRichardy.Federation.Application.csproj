@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+      <!--
+        Disabled CS8509 to allow switch expressions without a default case,
+        assuming exhaustiveness is guaranteed by controlled types
+      -->
+      <NoWarn>CS8509</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HttpsRichardy.Federation.Common\HttpsRichardy.Federation.Common.csproj" />
+    <ProjectReference Include="..\HttpsRichardy.Federation.Domain\HttpsRichardy.Federation.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="12.1.1" />
+    <PackageReference Include="HttpsRichardy.Dispatcher" Version="1.0.2" />
+  </ItemGroup>
+
+</Project>

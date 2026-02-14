@@ -1,0 +1,30 @@
+name: production deploy
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+
+      - name: build docker image
+        run: |
+          docker build -t httpsrichardy/federation:latest .
+
+      - name: login to docker hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: push docker image
+        run: docker push httpsrichardy/federation:latest
+
+      - name: deploy via easypanel webhook
+        run: |
+          curl -X POST ${{ secrets.PRODUCTION_DEPLOY_URL }}

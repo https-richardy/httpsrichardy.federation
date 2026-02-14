@@ -1,0 +1,16 @@
+**/.vs
+**/.git
+
+**/bin
+**/obj
+**/.vscode
+**/TestResults
+
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+Dockerfile
+README.md
+LICENSE

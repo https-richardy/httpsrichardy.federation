@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HttpsRichardy.Federation.Application\HttpsRichardy.Federation.Application.csproj" />
+    <ProjectReference Include="..\HttpsRichardy.Federation.Domain\HttpsRichardy.Federation.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
+    <PackageReference Include="HttpsRichardy.Internal.Infrastructure" Version="1.0.1" />
+  </ItemGroup>
+
+</Project>

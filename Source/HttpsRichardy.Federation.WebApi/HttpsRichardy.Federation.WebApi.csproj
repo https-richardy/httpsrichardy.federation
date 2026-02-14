@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!--
+        Disabled CS8509 to allow switch expressions without a default case,
+        assuming exhaustiveness is guaranteed by controlled types
+    -->
+    <NoWarn>CS8509</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.12" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.12" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.12.8" />
+    <PackageReference Include="Scalar.AspNetCore.Microsoft" Version="2.12.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HttpsRichardy.Federation.Infrastructure.IoC\HttpsRichardy.Federation.Infrastructure.IoC.csproj" />
+  </ItemGroup>
+
+</Project>
