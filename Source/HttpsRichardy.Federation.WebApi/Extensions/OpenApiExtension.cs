@@ -52,14 +52,14 @@ public static class OpenApiExtension
                 document.Info.Contact = new OpenApiContact
                 {
                     Name = "Richard Garcia",
-                    Email = "federation.desenvolvimento@gmail.com",
-                    Url = new Uri("https://github.com/federation-io/federation.identity.provider")
+                    Email = "code.richardy@gmail.com",
+                    Url = new Uri("https://github.com/https-richardy/httpsrichardy.federation.webapi")
                 };
 
                 document.Info.License = new OpenApiLicense
                 {
                     Name = "MIT",
-                    Url = new Uri("https://github.com/federation-io/federation.identity.provider/blob/master/LICENSE")
+                    Url = new Uri("https://github.com/https-richardy/httpsrichardy.federation.webapi/blob/master/LICENSE")
                 };
 
                 return Task.CompletedTask;
