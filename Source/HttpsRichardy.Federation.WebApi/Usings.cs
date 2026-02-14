@@ -5,6 +5,7 @@ global using System.Net.Mime;
 global using System.Security.Claims;
 
 global using Microsoft.AspNetCore.Mvc;
+global using Microsoft.AspNetCore.Mvc.ApiExplorer;
 global using Microsoft.AspNetCore.Mvc.ModelBinding;
 global using Microsoft.AspNetCore.Mvc.RazorPages;
 
@@ -31,6 +32,7 @@ global using HttpsRichardy.Federation.Application.Payloads.Realm;
 global using HttpsRichardy.Federation.Application.Payloads.User;
 global using HttpsRichardy.Federation.Application.Payloads.Scope;
 global using HttpsRichardy.Federation.Application.Payloads.Connect;
+global using HttpsRichardy.Federation.Application.Payloads.Common;
 
 global using HttpsRichardy.Federation.Application.Providers;
 global using HttpsRichardy.Federation.Application.Services;
@@ -42,8 +44,10 @@ global using HttpsRichardy.Federation.WebApi.Attributes;
 global using HttpsRichardy.Federation.WebApi.Binders;
 global using HttpsRichardy.Federation.WebApi.Providers;
 global using HttpsRichardy.Federation.WebApi.Constants;
+global using HttpsRichardy.Federation.WebApi.Conventions;
 
 global using HttpsRichardy.Internal.Essentials.Utilities;
+global using HttpsRichardy.Internal.Essentials.Patterns;
 global using HttpsRichardy.Dispatcher.Contracts;
 
 global using Scalar.AspNetCore;
