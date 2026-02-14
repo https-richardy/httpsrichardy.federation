@@ -1,7 +1,10 @@
 ﻿namespace HttpsRichardy.Federation.Application.Handlers.Authorization;
 
-public sealed class ClientCredentialsGrantHandler(IRealmCollection realmCollection, ISecurityTokenService tokenService) : IAuthorizationFlowHandler
+public sealed class ClientCredentialsGrantHandler(IRealmCollection realmCollection, ISecurityTokenService tokenService) :
+    IAuthorizationFlowHandler
 {
+    public Grant Grant => Grant.ClientCredentials;
+
     public async Task<Result<ClientAuthenticationResult>> HandleAsync(ClientAuthenticationCredentials parameters, CancellationToken cancellation = default)
     {
         var filters = new RealmFiltersBuilder()

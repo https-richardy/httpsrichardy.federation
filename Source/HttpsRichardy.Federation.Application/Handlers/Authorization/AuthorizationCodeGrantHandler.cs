@@ -1,7 +1,10 @@
 ﻿namespace HttpsRichardy.Federation.Application.Handlers.Authorization;
 
-public sealed class AuthorizationCodeGrantHandler(IRealmCollection realmCollection, IUserCollection userCollection, ISecurityTokenService tokenService, ITokenCollection tokenCollection) : IAuthorizationFlowHandler
+public sealed class AuthorizationCodeGrantHandler(IRealmCollection realmCollection, IUserCollection userCollection, ISecurityTokenService tokenService, ITokenCollection tokenCollection) :
+    IAuthorizationFlowHandler
 {
+    public Grant Grant => Grant.AuthorizationCode;
+
     public async Task<Result<ClientAuthenticationResult>> HandleAsync(
         ClientAuthenticationCredentials parameters, CancellationToken cancellation = default)
     {
