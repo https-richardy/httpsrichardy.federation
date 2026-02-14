@@ -1,16 +1,24 @@
 namespace HttpsRichardy.Federation.Application.Handlers.Identity;
 
-public sealed class ClientAuthenticationHandler(IRealmCollection realmCollection, IUserCollection userCollection, ITokenCollection tokenCollection, ISecurityTokenService tokenService) :
+public sealed class ClientAuthenticationHandler(IEnumerable<IAuthorizationFlowHandler> handlers) :
     IDispatchHandler<ClientAuthenticationCredentials, Result<ClientAuthenticationResult>>
 {
     public async Task<Result<ClientAuthenticationResult>> HandleAsync(
         ClientAuthenticationCredentials parameters, CancellationToken cancellation = default)
     {
-        IAuthorizationFlowHandler handler = parameters.GrantType switch
+        var grant = parameters.GrantType switch
         {
-            SupportedGrantType.AuthorizationCode => new AuthorizationCodeGrantHandler(realmCollection, userCollection, tokenService, tokenCollection),
-            SupportedGrantType.ClientCredentials => new ClientCredentialsGrantHandler(realmCollection, tokenService),
+            SupportedGrantType.ClientCredentials => Grant.ClientCredentials,
+            SupportedGrantType.AuthorizationCode => Grant.AuthorizationCode,
+
+            _ => Grant.Unspecified
         };
+
+        var handler = handlers.FirstOrDefault(handler => handler.Grant == grant);
+        if (handler is null)
+        {
+            return Result<ClientAuthenticationResult>.Failure(AuthorizationErrors.UnsupportedGrant);
+        }
 
         return await handler.HandleAsync(parameters, cancellation);
     }
