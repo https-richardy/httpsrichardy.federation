@@ -12,6 +12,11 @@ public static class AuthorizationErrors
         Description: "The provided authorization code is invalid, expired, or has already been used."
     );
 
+    public static readonly Error UnsupportedGrant = new(
+        Code: "#ERROR-F4EB5",
+        Description: "The specified authorization grant type is not supported."
+    );
+
     public static readonly Error AuthorizationCodeExpired = new(
         Code: "#ERROR-5F5B3",
         Description: "The authorization code has expired."
