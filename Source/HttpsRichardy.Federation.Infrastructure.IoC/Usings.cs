@@ -3,7 +3,6 @@ global using System.Security.Cryptography;
 
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Configuration;
-global using Microsoft.Extensions.Hosting;
 
 global using HttpsRichardy.Federation.Common.Configuration;
 global using HttpsRichardy.Federation.Domain.Collections;
@@ -38,4 +37,3 @@ global using HttpsRichardy.Dispatcher.Extensions;
 
 global using MongoDB.Driver;
 global using FluentValidation;
-global using FluentValidation.AspNetCore;
