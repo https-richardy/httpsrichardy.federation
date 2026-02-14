@@ -11,6 +11,9 @@ public static class ApplicationServicesExtension
         services.AddTransient<IClientCredentialsGenerator, ClientCredentialsGenerator>();
         services.AddTransient<IRedirectUriPolicy, RedirectUriPolicy>();
 
+        services.AddTransient<IAuthorizationFlowHandler, ClientCredentialsGrantHandler>();
+        services.AddTransient<IAuthorizationFlowHandler, AuthorizationCodeGrantHandler>();
+
         services.AddSingleton<IRealmProvider, RealmProvider>();
         services.AddSingleton<IPrincipalProvider, PrincipalProvider>();
     }
