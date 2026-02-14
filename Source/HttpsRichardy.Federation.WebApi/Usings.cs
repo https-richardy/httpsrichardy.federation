@@ -34,7 +34,6 @@ global using HttpsRichardy.Federation.Application.Payloads.Connect;
 
 global using HttpsRichardy.Federation.Application.Providers;
 global using HttpsRichardy.Federation.Application.Services;
-
 global using HttpsRichardy.Federation.Infrastructure.IoC.Extensions;
 
 global using HttpsRichardy.Federation.WebApi.Extensions;
@@ -45,6 +44,7 @@ global using HttpsRichardy.Federation.WebApi.Providers;
 global using HttpsRichardy.Federation.WebApi.Constants;
 
 global using HttpsRichardy.Internal.Essentials.Utilities;
-
 global using HttpsRichardy.Dispatcher.Contracts;
+
 global using Scalar.AspNetCore;
+global using FluentValidation.AspNetCore;
