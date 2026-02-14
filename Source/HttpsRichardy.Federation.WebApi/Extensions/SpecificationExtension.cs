@@ -14,7 +14,7 @@ public static class SpecificationsExtension
             options.HideSearch = true;
             options.Servers = [];
 
-            options.WithTitle("ichardy Federation | Reference");
+            options.WithTitle("Federation | Reference");
             options.WithClassicLayout();
             options.ExpandAllTags();
             options.AddPreferredSecuritySchemes(SecuritySchemes.Bearer);
