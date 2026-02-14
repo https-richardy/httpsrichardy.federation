@@ -6,10 +6,19 @@
 **/.vscode
 **/TestResults
 
+**/appsettings.json
+**/appsettings.Development.json
+**/appsettings.*.json
+
+.env
+.env.*
+.env.example
+
 *.user
 *.suo
 *.userosscache
 *.sln.docstates
+.gitattributes
 
 Dockerfile
 README.md
