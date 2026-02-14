@@ -14,5 +14,9 @@ public static class WebInfrastructureExtension
         services.AddProviders();
         services.AddOpenApiSpecification();
         services.AddRazorPages();
+        services.AddFluentValidationAutoValidation(options =>
+        {
+            options.DisableDataAnnotationsValidation = true;
+        });
     }
 }

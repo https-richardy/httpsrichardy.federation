@@ -5,11 +5,6 @@ public static class ValidationExtension
 {
     public static void AddValidators(this IServiceCollection services)
     {
-        services.AddFluentValidationAutoValidation(options =>
-        {
-            options.DisableDataAnnotationsValidation = true;
-        });
-
         services.AddTransient<IValidator<AuthenticationCredentials>, AuthenticationCredentialsValidator>();
         services.AddTransient<IValidator<AuthorizationParameters>, AuthorizationParametersValidator>();
         services.AddTransient<IValidator<ClientAuthenticationCredentials>, ClientAuthenticationCredentialsValidator>();
