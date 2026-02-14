@@ -1,6 +1,7 @@
 namespace HttpsRichardy.Federation.WebApi.Controllers;
 
 [ApiController]
+[ApiConventionType(typeof(GroupsConventions))]
 [RealmRequired]
 [Route("api/v1/groups")]
 public sealed class GroupsController(IDispatcher dispatcher) : ControllerBase

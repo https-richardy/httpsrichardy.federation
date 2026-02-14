@@ -1,6 +1,7 @@
 namespace HttpsRichardy.Federation.WebApi.Controllers;
 
 [ApiController]
+[ApiConventionType(typeof(IdentityConventions))]
 [Route("api/v1/identity")]
 public sealed class IdentityController(IDispatcher dispatcher) : ControllerBase
 {

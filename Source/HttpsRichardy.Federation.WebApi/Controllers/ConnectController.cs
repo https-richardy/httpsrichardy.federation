@@ -1,6 +1,7 @@
 namespace HttpsRichardy.Federation.WebApi.Controllers;
 
 [ApiController]
+[ApiConventionType(typeof(ConnectConventions))]
 [Route("api/v1/protocol/open-id/connect")]
 public sealed class ConnectController(IDispatcher dispatcher) : ControllerBase
 {

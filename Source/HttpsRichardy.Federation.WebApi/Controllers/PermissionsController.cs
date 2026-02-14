@@ -1,6 +1,7 @@
 namespace HttpsRichardy.Federation.WebApi.Controllers;
 
 [ApiController]
+[ApiConventionType(typeof(PermissionsConventions))]
 [RealmRequired]
 [Route("api/v1/permissions")]
 public sealed class PermissionsController(IDispatcher dispatcher) : ControllerBase

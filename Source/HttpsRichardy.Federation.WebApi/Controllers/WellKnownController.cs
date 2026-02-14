@@ -1,6 +1,7 @@
 namespace HttpsRichardy.Federation.WebApi.Controllers;
 
 [ApiController]
+[ApiConventionType(typeof(WellKnownConventions))]
 [Route(".well-known")]
 public sealed class WellKnownController(IDispatcher dispatcher) : ControllerBase
 {

@@ -1,6 +1,7 @@
 namespace HttpsRichardy.Federation.WebApi.Controllers;
 
 [ApiController]
+[ApiConventionType(typeof(ScopesConventions))]
 [RealmRequired]
 [Route("api/v1/scopes")]
 public sealed class ScopesController(IDispatcher dispatcher) : ControllerBase

@@ -1,6 +1,7 @@
 namespace HttpsRichardy.Federation.WebApi.Controllers;
 
 [ApiController]
+[ApiConventionType(typeof(UsersConventions))]
 [RealmRequired]
 [Route("api/v1/users")]
 public sealed class UsersController(IDispatcher dispatcher) : ControllerBase
