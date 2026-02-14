@@ -11,6 +11,9 @@ global using HttpsRichardy.Federation.Domain.Policies;
 
 global using HttpsRichardy.Federation.Application.Services;
 global using HttpsRichardy.Federation.Application.Providers;
+global using HttpsRichardy.Federation.Application.Contracts;
+global using HttpsRichardy.Federation.Application.Handlers.Authorization;
+
 global using HttpsRichardy.Federation.Application.Payloads.Identity;
 global using HttpsRichardy.Federation.Application.Payloads.Authorization;
 global using HttpsRichardy.Federation.Application.Payloads.Group;
