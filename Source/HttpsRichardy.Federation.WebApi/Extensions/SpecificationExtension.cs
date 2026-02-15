@@ -11,7 +11,6 @@ public static class SpecificationsExtension
             options.HideDarkModeToggle = true;
             options.HideClientButton = true;
             options.HideModels = true;
-            options.HideSearch = true;
             options.Servers = [];
 
             options.WithTitle("Federation | Reference");
