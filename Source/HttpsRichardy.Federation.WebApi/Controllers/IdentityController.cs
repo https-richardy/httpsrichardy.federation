@@ -26,13 +26,13 @@ public sealed class IdentityController(IDispatcher dispatcher) : ControllerBase
     [HttpPost]
     [RealmRequired]
     [Stability(Stability.Stable)]
-    public async Task<IActionResult> EnrollIdentityAsync(IdentityEnrollmentCredentials request, CancellationToken cancellation)
+    public async Task<IActionResult> EnrollIdentityAsync([FromBody] IdentityEnrollmentCredentials request, CancellationToken cancellation)
     {
         var result = await dispatcher.DispatchAsync(request, cancellation);
 
         return result switch
         {
-            { IsSuccess: true } =>
+            { IsSuccess: true } when result.Data is not null =>
                 StatusCode(StatusCodes.Status201Created, result.Data),
 
             { IsFailure: true } when result.Error == IdentityErrors.UserAlreadyExists =>
@@ -43,13 +43,13 @@ public sealed class IdentityController(IDispatcher dispatcher) : ControllerBase
     [HttpPost("authenticate")]
     [RealmRequired]
     [Stability(Stability.Deprecated)]
-    public async Task<IActionResult> AuthenticateAsync(AuthenticationCredentials request, CancellationToken cancellation)
+    public async Task<IActionResult> AuthenticateAsync([FromBody] AuthenticationCredentials request, CancellationToken cancellation)
     {
         var result = await dispatcher.DispatchAsync(request, cancellation);
 
         return result switch
         {
-            { IsSuccess: true } =>
+            { IsSuccess: true } when result.Data is not null =>
                 StatusCode(StatusCodes.Status200OK, result.Data),
 
             { IsFailure: true } when result.Error == AuthenticationErrors.InvalidCredentials =>
@@ -63,13 +63,13 @@ public sealed class IdentityController(IDispatcher dispatcher) : ControllerBase
     [HttpPost("refresh-token")]
     [RealmRequired]
     [Stability(Stability.Stable)]
-    public async Task<IActionResult> RefreshTokenAsync(SessionTokenRenewalScheme request, CancellationToken cancellation)
+    public async Task<IActionResult> RefreshTokenAsync([FromBody] SessionTokenRenewalScheme request, CancellationToken cancellation)
     {
         var result = await dispatcher.DispatchAsync(request, cancellation);
 
         return result switch
         {
-            { IsSuccess: true } =>
+            { IsSuccess: true } when result.Data is not null =>
                 StatusCode(StatusCodes.Status200OK, result.Data),
 
             { IsFailure: true } when result.Error == AuthenticationErrors.InvalidRefreshToken =>
@@ -92,7 +92,7 @@ public sealed class IdentityController(IDispatcher dispatcher) : ControllerBase
     [HttpPost("invalidate-session")]
     [RealmRequired]
     [Stability(Stability.Stable)]
-    public async Task<IActionResult> InvalidateSessionAsync(SessionInvalidationScheme request, CancellationToken cancellation)
+    public async Task<IActionResult> InvalidateSessionAsync([FromBody] SessionInvalidationScheme request, CancellationToken cancellation)
     {
         var result = await dispatcher.DispatchAsync(request, cancellation);
 

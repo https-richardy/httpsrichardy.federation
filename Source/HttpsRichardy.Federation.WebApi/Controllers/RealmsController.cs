@@ -24,13 +24,13 @@ public sealed class RealmsController(IDispatcher dispatcher) : ControllerBase
     [HttpPost]
     [Authorize(Roles = Permissions.CreateRealm)]
     [Stability(Stability.Stable)]
-    public async Task<IActionResult> CreateRealmAsync(RealmCreationScheme request, CancellationToken cancellation)
+    public async Task<IActionResult> CreateRealmAsync([FromBody] RealmCreationScheme request, CancellationToken cancellation)
     {
         var result = await dispatcher.DispatchAsync(request, cancellation);
 
         return result switch
         {
-            { IsSuccess: true } =>
+            { IsSuccess: true } when result.Data is not null =>
                 StatusCode(StatusCodes.Status201Created, result.Data),
 
             { IsFailure: true } when result.Error == RealmErrors.RealmAlreadyExists =>
@@ -41,14 +41,13 @@ public sealed class RealmsController(IDispatcher dispatcher) : ControllerBase
     [HttpPut("{id}")]
     [Authorize(Roles = Permissions.EditRealm)]
     [Stability(Stability.Stable)]
-    public async Task<IActionResult> UpdateRealmAsync(
-        string id, RealmUpdateScheme request, CancellationToken cancellation)
+    public async Task<IActionResult> UpdateRealmAsync([FromRoute] string id, [FromBody] RealmUpdateScheme request, CancellationToken cancellation)
     {
         var result = await dispatcher.DispatchAsync(request with { RealmId = id }, cancellation);
 
         return result switch
         {
-            { IsSuccess: true } =>
+            { IsSuccess: true } when result.Data is not null =>
                 StatusCode(StatusCodes.Status200OK, result.Data),
 
             { IsFailure: true } when result.Error == RealmErrors.RealmDoesNotExist =>
@@ -59,9 +58,9 @@ public sealed class RealmsController(IDispatcher dispatcher) : ControllerBase
     [HttpDelete("{id}")]
     [Authorize(Roles = Permissions.DeleteRealm)]
     [Stability(Stability.Stable)]
-    public async Task<IActionResult> DeleteRealmAsync(string id, CancellationToken cancellation)
+    public async Task<IActionResult> DeleteRealmAsync([FromRoute] string id, [FromQuery] RealmDeletionScheme request, CancellationToken cancellation)
     {
-        var result = await dispatcher.DispatchAsync(new RealmDeletionScheme { RealmId = id }, cancellation);
+        var result = await dispatcher.DispatchAsync(request with { RealmId = id }, cancellation);
 
         return result switch
         {
@@ -76,15 +75,14 @@ public sealed class RealmsController(IDispatcher dispatcher) : ControllerBase
     [HttpGet("{id}/permissions")]
     [Authorize(Roles = Permissions.ViewPermissions)]
     [Stability(Stability.Stable)]
-    public async Task<IActionResult> GetRealmPermissionsAsync(
-        [FromRoute] string id, [FromQuery] ListRealmAssignedPermissionsParameters request, CancellationToken cancellation
-    )
+    public async Task<IActionResult> GetRealmPermissionsAsync([FromRoute] string id, [FromQuery] ListRealmAssignedPermissionsParameters request, CancellationToken cancellation)
     {
         var result = await dispatcher.DispatchAsync(request with { RealmId = id }, cancellation);
 
         return result switch
         {
-            { IsSuccess: true } => StatusCode(StatusCodes.Status200OK, result.Data),
+            { IsSuccess: true } when result.Data is not null =>
+                StatusCode(StatusCodes.Status200OK, result.Data),
 
             { IsFailure: true } when result.Error == RealmErrors.RealmDoesNotExist =>
                 StatusCode(StatusCodes.Status404NotFound, result.Error),
@@ -94,8 +92,7 @@ public sealed class RealmsController(IDispatcher dispatcher) : ControllerBase
     [HttpPost("{id}/permissions")]
     [Authorize(Roles = Permissions.AssignPermissions)]
     [Stability(Stability.Stable)]
-    public async Task<IActionResult> AssignPermissionAsync(
-        [FromRoute] string id, [FromBody] AssignRealmPermissionScheme request, CancellationToken cancellation)
+    public async Task<IActionResult> AssignPermissionAsync([FromRoute] string id, [FromBody] AssignRealmPermissionScheme request, CancellationToken cancellation)
     {
         var result = await dispatcher.DispatchAsync(request with { RealmId = id }, cancellation);
 

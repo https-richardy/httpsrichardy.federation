@@ -9,8 +9,7 @@ public sealed class GroupsController(IDispatcher dispatcher) : ControllerBase
     [HttpGet]
     [Authorize(Roles = Permissions.ViewGroups)]
     [Stability(Stability.Stable)]
-    public async Task<IActionResult> GetGroupsAsync(
-        [FromQuery] GroupsFetchParameters request, CancellationToken cancellation)
+    public async Task<IActionResult> GetGroupsAsync([FromQuery] GroupsFetchParameters request, CancellationToken cancellation)
     {
         var result = await dispatcher.DispatchAsync(request, cancellation);
 
@@ -25,13 +24,13 @@ public sealed class GroupsController(IDispatcher dispatcher) : ControllerBase
     [HttpPost]
     [Authorize(Roles = Permissions.CreateGroup)]
     [Stability(Stability.Stable)]
-    public async Task<IActionResult> CreateGroupAsync(GroupCreationScheme request, CancellationToken cancellation)
+    public async Task<IActionResult> CreateGroupAsync([FromBody] GroupCreationScheme request, CancellationToken cancellation)
     {
         var result = await dispatcher.DispatchAsync(request, cancellation);
 
         return result switch
         {
-            { IsSuccess: true } =>
+            { IsSuccess: true } when result.Data is not null =>
                 StatusCode(StatusCodes.Status201Created, result.Data),
 
             { IsFailure: true } when result.Error == GroupErrors.GroupAlreadyExists =>
@@ -42,13 +41,13 @@ public sealed class GroupsController(IDispatcher dispatcher) : ControllerBase
     [HttpPut("{id}")]
     [Authorize(Roles = Permissions.EditGroup)]
     [Stability(Stability.Stable)]
-    public async Task<IActionResult> UpdateGroupAsync(string id, GroupUpdateScheme request, CancellationToken cancellation)
+    public async Task<IActionResult> UpdateGroupAsync([FromRoute] string id, [FromBody] GroupUpdateScheme request, CancellationToken cancellation)
     {
         var result = await dispatcher.DispatchAsync(request with { GroupId = id }, cancellation);
 
         return result switch
         {
-            { IsSuccess: true } =>
+            { IsSuccess: true } when result.Data is not null =>
                 StatusCode(StatusCodes.Status200OK, result.Data),
 
             { IsFailure: true } when result.Error == GroupErrors.GroupDoesNotExist =>
@@ -59,9 +58,9 @@ public sealed class GroupsController(IDispatcher dispatcher) : ControllerBase
     [HttpDelete("{id}")]
     [Authorize(Roles = Permissions.DeleteGroup)]
     [Stability(Stability.Stable)]
-    public async Task<IActionResult> DeleteGroupAsync(string id, CancellationToken cancellation)
+    public async Task<IActionResult> DeleteGroupAsync([FromRoute] string id, [FromQuery] GroupDeletionScheme request, CancellationToken cancellation)
     {
-        var result = await dispatcher.DispatchAsync(new GroupDeletionScheme { GroupId = id }, cancellation);
+        var result = await dispatcher.DispatchAsync(request with { GroupId = id }, cancellation);
 
         return result switch
         {
@@ -76,16 +75,14 @@ public sealed class GroupsController(IDispatcher dispatcher) : ControllerBase
     [HttpGet("{id}/permissions")]
     [Authorize(Roles = Permissions.ViewPermissions)]
     [Stability(Stability.Stable)]
-    public async Task<IActionResult> GetGroupsPermissionsAsync(
-        [FromRoute] string id,
-        [FromQuery] ListGroupAssignedPermissionsParameters request, CancellationToken cancellation
-    )
+    public async Task<IActionResult> GetGroupsPermissionsAsync([FromRoute] string id, [FromQuery] ListGroupAssignedPermissionsParameters request, CancellationToken cancellation)
     {
         var result = await dispatcher.DispatchAsync(request with { GroupId = id }, cancellation);
 
         return result switch
         {
-            { IsSuccess: true } => StatusCode(StatusCodes.Status200OK, result.Data),
+            { IsSuccess: true } when result.Data is not null =>
+                StatusCode(StatusCodes.Status200OK, result.Data),
 
             { IsFailure: true } when result.Error == GroupErrors.GroupDoesNotExist =>
                 StatusCode(StatusCodes.Status404NotFound, result.Error),
@@ -95,14 +92,13 @@ public sealed class GroupsController(IDispatcher dispatcher) : ControllerBase
     [HttpPost("{id}/permissions")]
     [Authorize(Roles = Permissions.AssignPermissions)]
     [Stability(Stability.Stable)]
-    public async Task<IActionResult> AssignPermissionAsync(
-        string id, AssignGroupPermissionScheme request, CancellationToken cancellation)
+    public async Task<IActionResult> AssignPermissionAsync([FromRoute] string id, [FromBody] AssignGroupPermissionScheme request, CancellationToken cancellation)
     {
         var result = await dispatcher.DispatchAsync(request with { GroupId = id }, cancellation);
 
         return result switch
         {
-            { IsSuccess: true } =>
+            { IsSuccess: true } when result.Data is not null =>
                 StatusCode(StatusCodes.Status200OK, result.Data),
 
             { IsFailure: true } when result.Error == GroupErrors.GroupDoesNotExist =>
@@ -119,7 +115,7 @@ public sealed class GroupsController(IDispatcher dispatcher) : ControllerBase
     [HttpDelete("{id}/permissions/{permissionId}")]
     [Authorize(Roles = Permissions.RevokePermissions)]
     [Stability(Stability.Stable)]
-    public async Task<IActionResult> RevokePermissionAsync(string id, string permissionId, CancellationToken cancellation)
+    public async Task<IActionResult> RevokePermissionAsync([FromRoute] string id, [FromRoute] string permissionId, CancellationToken cancellation)
     {
         var request = new RevokeGroupPermissionScheme { GroupId = id, PermissionId = permissionId };
         var result = await dispatcher.DispatchAsync(request, cancellation);

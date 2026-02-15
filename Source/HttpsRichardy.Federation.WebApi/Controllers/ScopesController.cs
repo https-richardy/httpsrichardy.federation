@@ -9,7 +9,7 @@ public sealed class ScopesController(IDispatcher dispatcher) : ControllerBase
     [HttpPost]
     [Authorize(Roles = Permissions.CreateScope)]
     [Stability(Stability.Experimental)]
-    public async Task<IActionResult> CreateScopeAsync(ScopeCreationScheme request, CancellationToken cancellation)
+    public async Task<IActionResult> CreateScopeAsync([FromBody] ScopeCreationScheme request, CancellationToken cancellation)
     {
         var result = await dispatcher.DispatchAsync(request, cancellation);
 

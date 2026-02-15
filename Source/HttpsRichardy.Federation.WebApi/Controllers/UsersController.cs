@@ -24,10 +24,9 @@ public sealed class UsersController(IDispatcher dispatcher) : ControllerBase
     [HttpDelete("{id}")]
     [Authorize(Roles = Permissions.EditUser)]
     [Stability(Stability.Stable)]
-    public async Task<IActionResult> DeleteUserAsync(string id, CancellationToken cancellation)
+    public async Task<IActionResult> DeleteUserAsync([FromQuery] UserDeletionScheme request, [FromRoute] string id, CancellationToken cancellation)
     {
-        var request = new UserDeletionScheme { UserId = id };
-        var result = await dispatcher.DispatchAsync(request, cancellation);
+        var result = await dispatcher.DispatchAsync(request with { UserId = id }, cancellation);
 
         return result switch
         {
@@ -41,16 +40,14 @@ public sealed class UsersController(IDispatcher dispatcher) : ControllerBase
     [HttpGet("{id}/permissions")]
     [Authorize(Roles = Permissions.ViewPermissions)]
     [Stability(Stability.Stable)]
-    public async Task<IActionResult> GetUserPermissionsAsync(
-        [FromRoute] string id,
-        [FromQuery] ListUserAssignedPermissionsParameters request, CancellationToken cancellation
-    )
+    public async Task<IActionResult> GetUserPermissionsAsync([FromRoute] string id, [FromQuery] ListUserAssignedPermissionsParameters request, CancellationToken cancellation)
     {
         var result = await dispatcher.DispatchAsync(request with { UserId = id }, cancellation);
 
         return result switch
         {
-            { IsSuccess: true } => StatusCode(StatusCodes.Status200OK, result.Data),
+            { IsSuccess: true } when result.Data is not null =>
+                StatusCode(StatusCodes.Status200OK, result.Data),
 
             { IsFailure: true } when result.Error == UserErrors.UserDoesNotExist =>
                 StatusCode(StatusCodes.Status404NotFound, result.Error),
@@ -60,10 +57,7 @@ public sealed class UsersController(IDispatcher dispatcher) : ControllerBase
     [HttpGet("{id}/groups")]
     [Authorize(Roles = Permissions.ViewGroups)]
     [Stability(Stability.Stable)]
-    public async Task<IActionResult> GetUserGroupsAsync(
-        [FromRoute] string id,
-        [FromQuery] ListUserAssignedGroupsParameters request, CancellationToken cancellation
-    )
+    public async Task<IActionResult> GetUserGroupsAsync([FromRoute] string id, [FromQuery] ListUserAssignedGroupsParameters request, CancellationToken cancellation)
     {
         var result = await dispatcher.DispatchAsync(request with { UserId = id }, cancellation);
 
@@ -79,8 +73,7 @@ public sealed class UsersController(IDispatcher dispatcher) : ControllerBase
     [HttpPost("{id}/groups")]
     [Authorize(Roles = Permissions.EditUser)]
     [Stability(Stability.Stable)]
-    public async Task<IActionResult> AssignUserToGroupAsync(
-        string id, AssignUserToGroupScheme request, CancellationToken cancellation)
+    public async Task<IActionResult> AssignUserToGroupAsync([FromRoute] string id, [FromBody] AssignUserToGroupScheme request, CancellationToken cancellation)
     {
         var result = await dispatcher.DispatchAsync(request with { UserId = id }, cancellation);
 
@@ -103,8 +96,7 @@ public sealed class UsersController(IDispatcher dispatcher) : ControllerBase
     [HttpPost("{id}/permissions")]
     [Authorize(Roles = Permissions.AssignPermissions)]
     [Stability(Stability.Stable)]
-    public async Task<IActionResult> AssignUserPermissionAsync(
-        string id, AssignUserPermissionScheme request, CancellationToken cancellation)
+    public async Task<IActionResult> AssignUserPermissionAsync([FromRoute] string id, [FromBody] AssignUserPermissionScheme request, CancellationToken cancellation)
     {
         var result = await dispatcher.DispatchAsync(request with { UserId = id }, cancellation);
 
@@ -127,8 +119,7 @@ public sealed class UsersController(IDispatcher dispatcher) : ControllerBase
     [HttpDelete("{id}/permissions/{permissionId}")]
     [Authorize(Roles = Permissions.RevokePermissions)]
     [Stability(Stability.Stable)]
-    public async Task<IActionResult> RevokeUserPermissionAsync(
-        string id, string permissionId, CancellationToken cancellation)
+    public async Task<IActionResult> RevokeUserPermissionAsync([FromRoute] string id, [FromRoute] string permissionId, CancellationToken cancellation)
     {
         var request = new RevokeUserPermissionScheme { UserId = id, PermissionId = permissionId };
         var result = await dispatcher.DispatchAsync(request, cancellation);
@@ -152,7 +143,7 @@ public sealed class UsersController(IDispatcher dispatcher) : ControllerBase
     [HttpDelete("{id}/groups/{groupId}")]
     [Authorize(Roles = Permissions.EditUser)]
     [Stability(Stability.Stable)]
-    public async Task<IActionResult> RemoveUserFromGroupAsync(string id, string groupId, CancellationToken cancellation)
+    public async Task<IActionResult> RemoveUserFromGroupAsync([FromRoute] string id, [FromRoute] string groupId, CancellationToken cancellation)
     {
         var request = new RemoveUserFromGroupScheme { UserId = id, GroupId = groupId };
         var result = await dispatcher.DispatchAsync(request, cancellation);

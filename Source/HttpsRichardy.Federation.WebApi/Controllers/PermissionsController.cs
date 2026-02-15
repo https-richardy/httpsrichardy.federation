@@ -24,13 +24,13 @@ public sealed class PermissionsController(IDispatcher dispatcher) : ControllerBa
     [HttpPost]
     [Authorize(Roles = Permissions.CreatePermission)]
     [Stability(Stability.Stable)]
-    public async Task<IActionResult> CreatePermissionAsync(PermissionCreationScheme request, CancellationToken cancellation)
+    public async Task<IActionResult> CreatePermissionAsync([FromBody] PermissionCreationScheme request, CancellationToken cancellation)
     {
         var result = await dispatcher.DispatchAsync(request, cancellation);
 
         return result switch
         {
-            { IsSuccess: true } =>
+            { IsSuccess: true } when result.Data is not null =>
                 StatusCode(StatusCodes.Status201Created, result.Data),
 
             { IsFailure: true } when result.Error == PermissionErrors.PermissionAlreadyExists =>
@@ -41,13 +41,13 @@ public sealed class PermissionsController(IDispatcher dispatcher) : ControllerBa
     [HttpPut("{id}")]
     [Authorize(Roles = Permissions.EditPermission)]
     [Stability(Stability.Stable)]
-    public async Task<IActionResult> UpdatePermissionAsync(string id, PermissionUpdateScheme request, CancellationToken cancellation)
+    public async Task<IActionResult> UpdatePermissionAsync([FromRoute] string id, [FromBody] PermissionUpdateScheme request, CancellationToken cancellation)
     {
         var result = await dispatcher.DispatchAsync(request with { PermissionId = id }, cancellation);
 
         return result switch
         {
-            { IsSuccess: true } =>
+            { IsSuccess: true } when result.Data is not null =>
                 StatusCode(StatusCodes.Status200OK, result.Data),
 
             { IsFailure: true } when result.Error == PermissionErrors.PermissionDoesNotExist =>
@@ -58,9 +58,9 @@ public sealed class PermissionsController(IDispatcher dispatcher) : ControllerBa
     [HttpDelete("{id}")]
     [Authorize(Roles = Permissions.DeletePermission)]
     [Stability(Stability.Stable)]
-    public async Task<IActionResult> DeletePermissionAsync(string id, CancellationToken cancellation)
+    public async Task<IActionResult> DeletePermissionAsync([FromRoute] string id, [FromQuery] PermissionDeletionScheme request, CancellationToken cancellation)
     {
-        var result = await dispatcher.DispatchAsync(new PermissionDeletionScheme { PermissionId = id }, cancellation);
+        var result = await dispatcher.DispatchAsync(request with { PermissionId = id }, cancellation);
 
         return result switch
         {

@@ -7,8 +7,7 @@ public sealed class WellKnownController(IDispatcher dispatcher) : ControllerBase
 {
     [HttpGet("openid-configuration")]
     [Stability(Stability.Stable)]
-    public async Task<IActionResult> GetConfigurationAsync(
-        [FromQuery] FetchOpenIDConfigurationParameters request, CancellationToken cancellation)
+    public async Task<IActionResult> GetConfigurationAsync([FromQuery] FetchOpenIDConfigurationParameters request, CancellationToken cancellation)
     {
         var result = await dispatcher.DispatchAsync(request, cancellation);
 
@@ -22,8 +21,7 @@ public sealed class WellKnownController(IDispatcher dispatcher) : ControllerBase
 
     [HttpGet("jwks.json")]
     [Stability(Stability.Stable)]
-    public async Task<IActionResult> GetJsonWebKeysAsync(
-        [FromQuery] FetchJsonWebKeysParameters request, CancellationToken cancellation)
+    public async Task<IActionResult> GetJsonWebKeysAsync([FromQuery] FetchJsonWebKeysParameters request, CancellationToken cancellation)
     {
         var result = await dispatcher.DispatchAsync(request, cancellation);
 
