@@ -179,6 +179,169 @@ public sealed class UserEndpointTests(IntegrationEnvironmentFixture factory) :
         }
     }
 
+    [Fact(DisplayName = "[e2e] - when GET /users/{id}/permissions should return both direct and inherited group permissions")]
+    public async Task WhenGetUserPermissions_ShouldReturnDirectAndInheritedPermissions()
+    {
+        /* arrange: authenticate user and get access token */
+        var httpClient = factory.HttpClient.WithRealmHeader("master");
+        var credentials = new AuthenticationCredentials
+        {
+            Username = "federation.testing.user",
+            Password = "federation.testing.password"
+        };
+
+        var authenticationResponse = await httpClient.PostAsJsonAsync("api/v1/identity/authenticate", credentials);
+        var authenticationResult = await authenticationResponse.Content.ReadFromJsonAsync<AuthenticationResult>();
+
+        Assert.NotNull(authenticationResult);
+        Assert.NotEmpty(authenticationResult.AccessToken);
+
+        httpClient.WithAuthorization(authenticationResult.AccessToken);
+
+        /* arrange: create a new user */
+        var enrollmentCredentials = new IdentityEnrollmentCredentials
+        {
+            Username = $"user.inherited.permissions.{Guid.NewGuid()}@email.com",
+            Password = "TestPassword123!"
+        };
+
+        var enrollmentResponse = await httpClient.PostAsJsonAsync("api/v1/identity", enrollmentCredentials);
+        var user = await enrollmentResponse.Content.ReadFromJsonAsync<UserDetailsScheme>();
+
+        Assert.NotNull(user);
+        Assert.Equal(HttpStatusCode.Created, enrollmentResponse.StatusCode);
+
+        /* arrange: create a direct permission */
+        var directPermissionPayload = _fixture.Build<PermissionCreationScheme>()
+            .With(permission => permission.Name, $"test.permission.direct.{Guid.NewGuid()}")
+            .Create();
+
+        var directPermissionResponse = await httpClient.PostAsJsonAsync("api/v1/permissions", directPermissionPayload);
+        var directPermission = await directPermissionResponse.Content.ReadFromJsonAsync<PermissionDetailsScheme>();
+
+        Assert.NotNull(directPermission);
+        Assert.Equal(HttpStatusCode.Created, directPermissionResponse.StatusCode);
+
+        /* arrange: assign direct permission to user */
+        var assignDirectPermissionPayload = new AssignUserPermissionScheme
+        {
+            PermissionName = directPermission.Name
+        };
+
+        var assignDirectPermissionResponse = await httpClient.PostAsJsonAsync($"api/v1/users/{user.Id}/permissions", assignDirectPermissionPayload);
+        Assert.Equal(HttpStatusCode.NoContent, assignDirectPermissionResponse.StatusCode);
+
+        /* arrange: create group and inherited permission */
+        var groupPayload = _fixture.Build<GroupCreationScheme>()
+            .With(group => group.Name, $"test-group-{Guid.NewGuid()}")
+            .Create();
+
+        var groupResponse = await httpClient.PostAsJsonAsync("api/v1/groups", groupPayload);
+        var group = await groupResponse.Content.ReadFromJsonAsync<GroupDetailsScheme>();
+
+        Assert.NotNull(group);
+        Assert.Equal(HttpStatusCode.Created, groupResponse.StatusCode);
+
+        var inheritedPermissionPayload = _fixture.Build<PermissionCreationScheme>()
+            .With(permission => permission.Name, $"test.permission.inherited.{Guid.NewGuid()}")
+            .Create();
+
+        var inheritedPermissionResponse = await httpClient.PostAsJsonAsync("api/v1/permissions", inheritedPermissionPayload);
+        var inheritedPermission = await inheritedPermissionResponse.Content.ReadFromJsonAsync<PermissionDetailsScheme>();
+
+        Assert.NotNull(inheritedPermission);
+        Assert.Equal(HttpStatusCode.Created, inheritedPermissionResponse.StatusCode);
+
+        var assignGroupPermissionPayload = new AssignGroupPermissionScheme
+        {
+            PermissionName = inheritedPermission.Name
+        };
+
+        var assignGroupPermissionResponse = await httpClient.PostAsJsonAsync($"api/v1/groups/{group.Id}/permissions", assignGroupPermissionPayload);
+        Assert.Equal(HttpStatusCode.OK, assignGroupPermissionResponse.StatusCode);
+
+        /* arrange: assign user to group */
+        var assignUserToGroupPayload = new AssignUserToGroupScheme
+        {
+            GroupId = group.Id
+        };
+
+        var assignUserToGroupResponse = await httpClient.PostAsJsonAsync($"api/v1/users/{user.Id}/groups", assignUserToGroupPayload);
+        Assert.Equal(HttpStatusCode.NoContent, assignUserToGroupResponse.StatusCode);
+
+        /* act: request user permissions */
+        var response = await httpClient.GetAsync($"api/v1/users/{user.Id}/permissions");
+        var permissions = await response.Content.ReadFromJsonAsync<IReadOnlyCollection<PermissionDetailsScheme>>();
+
+        /* assert: should return both direct and inherited permissions */
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(permissions);
+
+        Assert.Contains(permissions, permission => permission.Name == directPermission.Name);
+        Assert.Contains(permissions, permission => permission.Name == inheritedPermission.Name);
+    }
+
+    [Fact(DisplayName = "[e2e] - when GET /users/{id}/permissions and user has no groups should still return direct permissions")]
+    public async Task WhenGetUserPermissionsWithUserWithoutGroups_ShouldReturnDirectPermissions()
+    {
+        /* arrange: authenticate user and get access token */
+        var httpClient = factory.HttpClient.WithRealmHeader("master");
+        var credentials = new AuthenticationCredentials
+        {
+            Username = "federation.testing.user",
+            Password = "federation.testing.password"
+        };
+
+        var authenticationResponse = await httpClient.PostAsJsonAsync("api/v1/identity/authenticate", credentials);
+        var authenticationResult = await authenticationResponse.Content.ReadFromJsonAsync<AuthenticationResult>();
+
+        Assert.NotNull(authenticationResult);
+        Assert.NotEmpty(authenticationResult.AccessToken);
+
+        httpClient.WithAuthorization(authenticationResult.AccessToken);
+
+        /* arrange: create a new user without assigning any groups */
+        var enrollmentCredentials = new IdentityEnrollmentCredentials
+        {
+            Username = $"user.no.groups.permissions.{Guid.NewGuid()}@email.com",
+            Password = "TestPassword123!"
+        };
+
+        var enrollmentResponse = await httpClient.PostAsJsonAsync("api/v1/identity", enrollmentCredentials);
+        var user = await enrollmentResponse.Content.ReadFromJsonAsync<UserDetailsScheme>();
+
+        Assert.NotNull(user);
+        Assert.Equal(HttpStatusCode.Created, enrollmentResponse.StatusCode);
+
+        /* arrange: create and assign a direct permission */
+        var permissionPayload = _fixture.Build<PermissionCreationScheme>()
+            .With(permission => permission.Name, $"test.permission.direct.only.{Guid.NewGuid()}")
+            .Create();
+
+        var permissionResponse = await httpClient.PostAsJsonAsync("api/v1/permissions", permissionPayload);
+        var permission = await permissionResponse.Content.ReadFromJsonAsync<PermissionDetailsScheme>();
+
+        Assert.NotNull(permission);
+        Assert.Equal(HttpStatusCode.Created, permissionResponse.StatusCode);
+
+        var assignPermissionPayload = new AssignUserPermissionScheme
+        {
+            PermissionName = permission.Name
+        };
+
+        var assignPermissionResponse = await httpClient.PostAsJsonAsync($"api/v1/users/{user.Id}/permissions", assignPermissionPayload);
+        Assert.Equal(HttpStatusCode.NoContent, assignPermissionResponse.StatusCode);
+
+        /* act: request user permissions */
+        var response = await httpClient.GetAsync($"api/v1/users/{user.Id}/permissions");
+        var permissions = await response.Content.ReadFromJsonAsync<IReadOnlyCollection<PermissionDetailsScheme>>();
+
+        /* assert: endpoint should work and return direct permissions even without group membership */
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(permissions);
+        Assert.Contains(permissions, assigned => assigned.Name == permission.Name);
+    }
+
     [Fact(DisplayName = "[e2e] - when GET /users/{id}/permissions with non-existent user should return 404 #ERROR-E6B32")]
     public async Task WhenGetUserPermissionsWithNonExistentUser_ShouldReturnNotFound()
     {
