@@ -17,8 +17,8 @@ public sealed class PrincipalMiddleware(RequestDelegate next)
             return;
         }
 
-        var userCollection = context.RequestServices.GetRequiredService<IUserCollection>();
         var userIdClaim = context.User.FindFirst(ClaimTypes.NameIdentifier);
+        var preferredUsernameClaim = context.User.Claims.FirstOrDefault(claim => claim.Type == "preferred_username");
 
         if (userIdClaim == null || string.IsNullOrWhiteSpace(userIdClaim.Value))
         {
@@ -26,17 +26,19 @@ public sealed class PrincipalMiddleware(RequestDelegate next)
             return;
         }
 
-        var filters = UserFilters.WithSpecifications()
-            .WithIdentifier(userIdClaim.Value)
-            .Build();
-
-        var users = await userCollection.GetUsersAsync(filters, context.RequestAborted);
-        var user = users.FirstOrDefault();
-
-        if (user is not null)
+        if (preferredUsernameClaim == null || string.IsNullOrWhiteSpace(preferredUsernameClaim.Value))
         {
-            principalProvider.SetPrincipal(user);
+            await next(context);
+            return;
         }
+
+        var principal = new User()
+        {
+            Id = userIdClaim.Value,
+            Username = preferredUsernameClaim.Value
+        };
+
+        principalProvider.SetPrincipal(principal);
 
         await next(context);
     }
