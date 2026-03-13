@@ -16,6 +16,7 @@ public static class PermissionsConventions
     [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Prefix)]
     [ProducesResponseType(typeof(PermissionDetailsScheme), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Error), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(Error), StatusCodes.Status409Conflict)]
     public static void UpdatePermissionAsync(string id, PermissionUpdateScheme request, CancellationToken cancellation) { }
 
     [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Prefix)]
