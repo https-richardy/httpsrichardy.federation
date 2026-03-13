@@ -30,7 +30,6 @@ global using HttpsRichardy.Federation.Application.Contracts;
 global using HttpsRichardy.Federation.Application.Providers;
 global using HttpsRichardy.Federation.Application.Mappers;
 global using HttpsRichardy.Federation.Application.Utilities;
-global using HttpsRichardy.Federation.Application.Handlers.Authorization;
 
 global using FluentValidation;
 global using HttpsRichardy.Dispatcher.Contracts;
