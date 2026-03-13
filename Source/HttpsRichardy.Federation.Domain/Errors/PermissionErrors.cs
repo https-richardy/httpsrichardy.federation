@@ -7,6 +7,11 @@ public static class PermissionErrors
         Description: "The permission with the specified name already exists."
     );
 
+    public static readonly Error PermissionNameIsReserved = new(
+        Code: "#ERROR-7B1E2",
+        Description: "The permission name is reserved by the system."
+    );
+
     public static readonly Error PermissionDoesNotExist = new(
         Code: "#ERROR-93697",
         Description: "The specified permission does not exist."
