@@ -9,7 +9,9 @@ public static class ApplicationServicesExtension
         services.AddTransient<IAuthenticationService, AuthenticationService>();
         services.AddTransient<ISecurityTokenService, JwtSecurityTokenService>();
         services.AddTransient<IClientCredentialsGenerator, ClientCredentialsGenerator>();
+
         services.AddTransient<IRedirectUriPolicy, RedirectUriPolicy>();
+        services.AddTransient<IPermissionNamespacePolicy, PermissionNamespacePolicy>();
 
         services.AddTransient<IAuthorizationFlowHandler, ClientCredentialsGrantHandler>();
         services.AddTransient<IAuthorizationFlowHandler, AuthorizationCodeGrantHandler>();
