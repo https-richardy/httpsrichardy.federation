@@ -17,6 +17,7 @@ global using HttpsRichardy.Internal.Essentials.Utilities;
 global using HttpsRichardy.Federation.Domain.Aggregates;
 global using HttpsRichardy.Federation.Domain.Filtering;
 global using HttpsRichardy.Federation.Domain.Collections;
+global using HttpsRichardy.Federation.Common.Constants;
 
 global using HttpsRichardy.Federation.Application.Services;
 global using HttpsRichardy.Federation.Application.Providers;
