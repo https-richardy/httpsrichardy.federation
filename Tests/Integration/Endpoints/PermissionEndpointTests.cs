@@ -112,6 +112,76 @@ public sealed class PermissionEndpointTests(IntegrationEnvironmentFixture factor
         Assert.Equal(PermissionErrors.PermissionAlreadyExists, error);
     }
 
+    [Fact(DisplayName = "[e2e] - when POST /permissions in a non-master realm with reserved system name should return 409 #ERROR-7B1E2")]
+    public async Task WhenPostPermissionsWithReservedSystemNameInNonMasterRealm_ShouldReturnConflict()
+    {
+        /* arrange: authenticate in master realm */
+        var masterClient = factory.HttpClient.WithRealmHeader("master");
+        var masterCredentials = new AuthenticationCredentials
+        {
+            Username = "federation.testing.user",
+            Password = "federation.testing.password"
+        };
+
+        var masterAuthenticationResponse = await masterClient.PostAsJsonAsync("api/v1/identity/authenticate", masterCredentials);
+        var masterAuthenticationResult = await masterAuthenticationResponse.Content.ReadFromJsonAsync<AuthenticationResult>();
+
+        Assert.NotNull(masterAuthenticationResult);
+        Assert.NotEmpty(masterAuthenticationResult.AccessToken);
+
+        masterClient.WithAuthorization(masterAuthenticationResult.AccessToken);
+
+        /* arrange: create a new realm */
+        var realmPayload = _fixture.Build<RealmCreationScheme>()
+            .With(realm => realm.Name, $"test-realm-{Guid.NewGuid()}")
+            .Create();
+
+        var realmResponse = await masterClient.PostAsJsonAsync("api/v1/realms", realmPayload);
+        var realm = await realmResponse.Content.ReadFromJsonAsync<RealmDetailsScheme>();
+
+        Assert.NotNull(realm);
+        Assert.Equal(HttpStatusCode.Created, realmResponse.StatusCode);
+
+        /* arrange: authenticate realm via OAuth 2.0 client_credentials */
+        var oauthCredentials = new Dictionary<string, string>
+        {
+            { "grant_type", "client_credentials" },
+            { "client_id", realm.ClientId },
+            { "client_secret", realm.ClientSecret }
+        };
+
+        var oauthContent = new FormUrlEncodedContent(oauthCredentials);
+        var connectClient = factory.HttpClient;
+
+        var oauthResponse = await connectClient.PostAsync("api/v1/protocol/open-id/connect/token", oauthContent);
+        var oauthResult = await oauthResponse.Content.ReadFromJsonAsync<ClientAuthenticationResult>();
+
+        Assert.Equal(HttpStatusCode.OK, oauthResponse.StatusCode);
+
+        Assert.NotNull(oauthResult);
+        Assert.NotEmpty(oauthResult.AccessToken);
+
+        var realmClient = factory.HttpClient.WithRealmHeader(realm.Name);
+
+        realmClient.WithAuthorization(oauthResult.AccessToken);
+
+        /* act: attempt to create a permission using a reserved system name */
+        var payload = _fixture.Build<PermissionCreationScheme>()
+            .With(permission => permission.Name, Permissions.ViewRealms)
+            .Create();
+
+        var response = await realmClient.PostAsJsonAsync("api/v1/permissions", payload);
+
+        /* assert: response should be 409 Conflict */
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+
+        var error = await response.Content.ReadFromJsonAsync<Error>();
+
+        Assert.NotNull(error);
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        Assert.Equal(PermissionErrors.PermissionNameIsReserved, error);
+    }
+
     [Fact(DisplayName = "[e2e] - when PUT /permissions/{id} with valid data should update permission successfully")]
     public async Task WhenPutPermissionsWithValidData_ShouldUpdatePermissionSuccessfully()
     {
@@ -158,6 +228,51 @@ public sealed class PermissionEndpointTests(IntegrationEnvironmentFixture factor
         /* assert: permission details should be updated */
         Assert.Equal(permission.Id, updatedPermission.Id);
         Assert.Equal(updatePayload.Name, updatedPermission.Name);
+    }
+
+    [Fact(DisplayName = "[e2e] - when PUT /permissions/{id} with reserved system name should return 409 #ERROR-7B1E2")]
+    public async Task WhenPutPermissionsWithReservedSystemName_ShouldReturnConflict()
+    {
+        /* arrange: authenticate user and get access token */
+        var httpClient = factory.HttpClient.WithRealmHeader("master");
+        var credentials = new AuthenticationCredentials
+        {
+            Username = "federation.testing.user",
+            Password = "federation.testing.password"
+        };
+
+        var authenticationResponse = await httpClient.PostAsJsonAsync("api/v1/identity/authenticate", credentials);
+        var authenticationResult = await authenticationResponse.Content.ReadFromJsonAsync<AuthenticationResult>();
+
+        Assert.NotNull(authenticationResult);
+        Assert.NotEmpty(authenticationResult.AccessToken);
+
+        httpClient.WithAuthorization(authenticationResult.AccessToken);
+
+        /* arrange: create a custom permission */
+        var createPayload = _fixture.Build<PermissionCreationScheme>()
+            .With(permission => permission.Name, $"test.permission.{Guid.NewGuid()}")
+            .Create();
+
+        var createResponse = await httpClient.PostAsJsonAsync("api/v1/permissions", createPayload);
+        var permission = await createResponse.Content.ReadFromJsonAsync<PermissionDetailsScheme>();
+
+        Assert.NotNull(permission);
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+
+        /* act: attempt to rename it to a reserved system permission */
+        var updatePayload = _fixture.Build<PermissionUpdateScheme>()
+            .With(update => update.Name, Permissions.ViewRealms)
+            .Create();
+
+        var response = await httpClient.PutAsJsonAsync($"api/v1/permissions/{permission.Id}", updatePayload);
+        var error = await response.Content.ReadFromJsonAsync<Error>();
+
+        /* assert: response should be 409 Conflict */
+        Assert.NotNull(error);
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        Assert.Equal(PermissionErrors.PermissionNameIsReserved, error);
     }
 
     [Fact(DisplayName = "[e2e] - when PUT /permissions/{id} with non-existent permission should return 404 #ERROR-93697")]

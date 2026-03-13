@@ -35,6 +35,9 @@ public sealed class PermissionsController(IDispatcher dispatcher) : ControllerBa
 
             { IsFailure: true } when result.Error == PermissionErrors.PermissionAlreadyExists =>
                 StatusCode(StatusCodes.Status409Conflict, result.Error),
+
+            { IsFailure: true } when result.Error == PermissionErrors.PermissionNameIsReserved =>
+                StatusCode(StatusCodes.Status409Conflict, result.Error),
         };
     }
 
@@ -52,6 +55,9 @@ public sealed class PermissionsController(IDispatcher dispatcher) : ControllerBa
 
             { IsFailure: true } when result.Error == PermissionErrors.PermissionDoesNotExist =>
                 StatusCode(StatusCodes.Status404NotFound, result.Error),
+
+            { IsFailure: true } when result.Error == PermissionErrors.PermissionNameIsReserved =>
+                StatusCode(StatusCodes.Status409Conflict, result.Error),
         };
     }
 

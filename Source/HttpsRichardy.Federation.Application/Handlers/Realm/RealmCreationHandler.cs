@@ -31,7 +31,7 @@ public sealed class RealmCreationHandler(IRealmCollection collection, IClientCre
         var defaultRealm = matchingRealms.FirstOrDefault()!;
 
         realm.Permissions = defaultRealm.Permissions
-            .Where(permission => DefaultRealmPermissions.InitialPermissions.Contains(permission.Name))
+            .Where(permission => RealmPermissions.InitialPermissions.Contains(permission.Name))
             .ToList();
 
         await collection.InsertAsync(realm, cancellation: cancellation);

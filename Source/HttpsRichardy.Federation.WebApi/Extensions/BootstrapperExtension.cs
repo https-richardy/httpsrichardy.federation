@@ -33,33 +33,12 @@ public static class BootstrapperExtension
         }
 
         defaultRealm.SecretHash = await passwordHasher.HashPasswordAsync(realmCredentials.ClientId + defaultRealm.Name);
-        defaultRealm.Permissions = [
-            new() { Id = Identifier.Generate<Permission>(), Name = Permissions.CreateGroup, RealmId = defaultRealm.Id },
-            new() { Id = Identifier.Generate<Permission>(), Name = Permissions.DeleteGroup, RealmId = defaultRealm.Id },
-            new() { Id = Identifier.Generate<Permission>(), Name = Permissions.ViewGroups,  RealmId = defaultRealm.Id },
-            new() { Id = Identifier.Generate<Permission>(), Name = Permissions.EditGroup,   RealmId = defaultRealm.Id },
-
-            new() { Id = Identifier.Generate<Permission>(), Name = Permissions.DeleteUser, RealmId = defaultRealm.Id },
-            new() { Id = Identifier.Generate<Permission>(), Name = Permissions.EditUser,   RealmId = defaultRealm.Id },
-            new() { Id = Identifier.Generate<Permission>(), Name = Permissions.ViewUsers,  RealmId = defaultRealm.Id },
-
-            new() { Id = Identifier.Generate<Permission>(), Name = Permissions.CreateRealm, RealmId = defaultRealm.Id },
-            new() { Id = Identifier.Generate<Permission>(), Name = Permissions.DeleteRealm, RealmId = defaultRealm.Id },
-            new() { Id = Identifier.Generate<Permission>(), Name = Permissions.EditRealm,   RealmId = defaultRealm.Id },
-            new() { Id = Identifier.Generate<Permission>(), Name = Permissions.ViewRealms,  RealmId = defaultRealm.Id },
-
-            new() { Id = Identifier.Generate<Permission>(), Name = Permissions.CreatePermission,  RealmId = defaultRealm.Id },
-            new() { Id = Identifier.Generate<Permission>(), Name = Permissions.AssignPermissions, RealmId = defaultRealm.Id },
-            new() { Id = Identifier.Generate<Permission>(), Name = Permissions.RevokePermissions, RealmId = defaultRealm.Id },
-            new() { Id = Identifier.Generate<Permission>(), Name = Permissions.ViewPermissions,   RealmId = defaultRealm.Id },
-            new() { Id = Identifier.Generate<Permission>(), Name = Permissions.EditPermission,    RealmId = defaultRealm.Id },
-            new() { Id = Identifier.Generate<Permission>(), Name = Permissions.DeletePermission,  RealmId = defaultRealm.Id },
-
-            new() { Id = Identifier.Generate<Permission>(), Name = Permissions.CreateScope,  RealmId = defaultRealm.Id },
-            new() { Id = Identifier.Generate<Permission>(), Name = Permissions.EditScope,    RealmId = defaultRealm.Id },
-            new() { Id = Identifier.Generate<Permission>(), Name = Permissions.DeleteScope,  RealmId = defaultRealm.Id },
-            new() { Id = Identifier.Generate<Permission>(), Name = Permissions.ViewScopes,   RealmId = defaultRealm.Id },
-        ];
+        defaultRealm.Permissions = [.. RealmPermissions.SystemPermissions.Select(permissionName => new Permission
+        {
+            Id = Identifier.Generate<Permission>(),
+            Name = permissionName,
+            RealmId = defaultRealm.Id
+        })];
 
         var scopes = new List<Scope>
         {

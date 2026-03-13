@@ -1,6 +1,6 @@
 namespace HttpsRichardy.Federation.Application.Handlers.Permission;
 
-public sealed class PermissionUpdateHandler(IPermissionCollection collection, IRealmProvider realmProvider) :
+public sealed class PermissionUpdateHandler(IPermissionCollection collection, IPermissionNamespacePolicy policy, IRealmProvider realmProvider) :
     IDispatchHandler<PermissionUpdateScheme, Result<PermissionDetailsScheme>>
 {
     public async Task<Result<PermissionDetailsScheme>> HandleAsync(PermissionUpdateScheme parameters, CancellationToken cancellation = default)
@@ -16,6 +16,12 @@ public sealed class PermissionUpdateHandler(IPermissionCollection collection, IR
         if (permission is null)
         {
             return Result<PermissionDetailsScheme>.Failure(PermissionErrors.PermissionDoesNotExist);
+        }
+
+        var result = await policy.EnsurePermissionIsAllowedAsync(realm, new() { Name = parameters.Name }, cancellation);
+        if (result.IsFailure)
+        {
+            return Result<PermissionDetailsScheme>.Failure(PermissionErrors.PermissionNameIsReserved);
         }
 
         permission = PermissionMapper.AsPermission(parameters, permission, realm);
