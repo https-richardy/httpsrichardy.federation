@@ -42,8 +42,12 @@ global using HttpsRichardy.Federation.TestSuite.Extensions;
 global using HttpsRichardy.Federation.TestSuite.Integration.Fixtures;
 
 global using Xunit;
+global using Moq;
+
 global using DotNet.Testcontainers.Builders;
 global using DotNet.Testcontainers.Containers;
+
 global using MongoDB.Driver;
+global using MongoDB.Driver.Core.Configuration;
+
 global using AutoFixture;
-global using Moq;
