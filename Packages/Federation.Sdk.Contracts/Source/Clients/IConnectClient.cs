@@ -6,4 +6,7 @@ public interface IConnectClient
         ClientAuthenticationCredentials credentials,
         CancellationToken cancellation = default
     );
+
+
+    
 }
