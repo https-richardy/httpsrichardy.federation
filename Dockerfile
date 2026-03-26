@@ -7,23 +7,26 @@ EXPOSE 8080
 FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build
 WORKDIR /workdir
 
+ARG BUILD_CONFIGURATION=Release
+ARG SOLUTION=HttpsRichardy.Federation
+
 # copy only csproj and sln to restore as early as possible
-COPY ["Source/HttpsRichardy.Federation.WebApi/HttpsRichardy.Federation.WebApi.csproj", "HttpsRichardy.Federation.WebApi/"]
-COPY ["HttpsRichardy.Federation.sln", "./"]
+COPY ["Source/${SOLUTION}.WebApi/${SOLUTION}.WebApi.csproj", "${SOLUTION}.WebApi/"]
+COPY ["${SOLUTION}.sln", "./"]
 
 # restore dependencies
-RUN dotnet restore "HttpsRichardy.Federation.WebApi/HttpsRichardy.Federation.WebApi.csproj"
+RUN dotnet restore "${SOLUTION}.WebApi/${SOLUTION}.WebApi.csproj"
 
 # copy the rest of the source code
 COPY Source/ ./Source/
 
-WORKDIR "/workdir/Source/HttpsRichardy.Federation.WebApi"
+WORKDIR "/workdir/Source/${SOLUTION}.WebApi"
 
 # build in Release mode
-RUN dotnet build "HttpsRichardy.Federation.WebApi.csproj" -c Release -o /artifacts/build
+RUN dotnet build "${SOLUTION}.WebApi.csproj" -c $BUILD_CONFIGURATION -o /artifacts/build
 
 # publish the project for production
-RUN dotnet publish "HttpsRichardy.Federation.WebApi.csproj" -c Release -o /artifacts/publish /p:UseAppHost=false
+RUN dotnet publish "${SOLUTION}.WebApi.csproj" -c $BUILD_CONFIGURATION -o /artifacts/publish /p:UseAppHost=false
 
 # final image to run the app
 FROM base AS final
