@@ -1,0 +1,60 @@
+name: workflow - publish packages
+
+on:
+  push:
+    branches:
+      - master
+      - development
+    paths:
+      - Packages/Federation.Sdk/**
+      - Packages/Federation.Sdk.Contracts/**
+
+  pull_request:
+    branches:
+      - master
+      - development
+
+    paths:
+      - Packages/Federation.Sdk/**
+      - Packages/Federation.Sdk.Contracts/**
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      federation_sdk: ${{ steps.filter.outputs.federation_sdk }}
+      federation_sdk_contracts: ${{ steps.filter.outputs.federation_sdk_contracts }}
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+
+      - name: detect changed paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            federation_sdk:
+              - 'Packages/Federation.Sdk/**'
+            federation_sdk_contracts:
+              - 'Packages/Federation.Sdk.Contracts/**'
+
+  publish-federation-sdk:
+    needs: changes
+    if: needs.changes.outputs.federation_sdk == 'true'
+    uses: ./.github/workflows/reusable-publish-package.yml
+    with:
+      working_directory: Packages/Federation.Sdk/Source
+      dotnet_version: 9.0.x
+      base_version: "1.0"
+    secrets: inherit
+
+  publish-federation-sdk-contracts:
+    needs: changes
+    if: needs.changes.outputs.federation_sdk_contracts == 'true'
+    uses: ./.github/workflows/reusable-publish-package.yml
+    with:
+      working_directory: Packages/Federation.Sdk.Contracts/Source
+      dotnet_version: 9.0.x
+      base_version: "1.0"
+    secrets: inherit

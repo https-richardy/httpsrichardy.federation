@@ -1,0 +1,34 @@
+name: workflow — quality assurance
+
+on:
+  workflow_call:
+    inputs:
+      service_path:
+        required: true
+        type: string
+
+jobs:
+  quality-assurance:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ${{ inputs.service_path }}
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: restore
+        run: dotnet restore
+
+      - name: build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: test
+        run: dotnet test --no-build --configuration Release --verbosity normal
