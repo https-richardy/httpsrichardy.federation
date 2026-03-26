@@ -31,6 +31,7 @@ WORKDIR /artifacts
 
 ENV ASPNETCORE_URLS=http://+:8080
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=true
+ENV DOTNET_RUNNING_IN_CONTAINER=true
 
 # copy published files from the build stage
 COPY --from=build /artifacts/publish .
