@@ -1,0 +1,51 @@
+name: workflow - trigger pull request quality assurance
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      federation_sdk: ${{ steps.filter.outputs.federation_sdk }}
+      federation_sdk_contracts: ${{ steps.filter.outputs.federation_sdk_contracts }}
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: detect changed paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            backend:
+              - 'Applications/Backend/**'
+            federation_sdk:
+              - 'Packages/Federation.Sdk/**'
+            federation_sdk_contracts:
+              - 'Packages/Federation.Sdk.Contracts/**'
+
+  quality-assurance-backend:
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
+    uses: ./.github/workflows/reusable-quality-assurance.yml
+    with:
+      service_path: Applications/Backend
+
+  quality-assurance-federation-sdk:
+    needs: changes
+    if: needs.changes.outputs.federation_sdk == 'true'
+    uses: ./.github/workflows/reusable-quality-assurance.yml
+    with:
+      service_path: Packages/Federation.Sdk
+
+  quality-assurance-federation-sdk-contracts:
+    needs: changes
+    if: needs.changes.outputs.federation_sdk_contracts == 'true'
+    uses: ./.github/workflows/reusable-quality-assurance.yml
+    with:
+      service_path: Packages/Federation.Sdk.Contracts
