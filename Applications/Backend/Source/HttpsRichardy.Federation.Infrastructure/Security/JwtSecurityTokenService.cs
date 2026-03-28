@@ -22,7 +22,7 @@ public sealed class JwtSecurityTokenService(
             .Where(group => user.Groups.Any(userGroup => userGroup.Id == group.Id))
             .ToList();
 
-        var groupPermissions = groups.SelectMany(group => group.Permissions ?? [  ]);
+        var groupPermissions = groups.SelectMany(group => group.Permissions ?? []);
         var permissions = user.Permissions
             .Concat(groupPermissions)
             .GroupBy(permission => permission.Name)
