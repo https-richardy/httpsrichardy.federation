@@ -1,0 +1,579 @@
+{
+    "Routes": [
+        {
+            "UpstreamHttpMethod": [ "GET" ],
+            "UpstreamPathTemplate": "/.well-known/openid-configuration",
+            "DownstreamPathTemplate": "/.well-known/openid-configuration",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5286
+                }
+            ],
+            "RateLimitOptions": {
+                "ClientIdHeader": "Client",
+                "EnableRateLimiting": true,
+                "Period": "1s",
+                "Limit": 5
+            },
+            "QoSOptions": {
+                "ExceptionsAllowedBeforeBreaking": 3,
+                "DurationOfBreak": 5000,
+                "TimeoutValue": 2000
+            }
+        },
+        {
+            "UpstreamHttpMethod": [ "GET" ],
+            "UpstreamPathTemplate": "/.well-known/jwks.json",
+            "DownstreamPathTemplate": "/.well-known/jwks.json",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5286
+                }
+            ],
+            "RateLimitOptions": {
+                "ClientIdHeader": "Client",
+                "EnableRateLimiting": true,
+                "Period": "1s",
+                "Limit": 5
+            },
+            "QoSOptions": {
+                "ExceptionsAllowedBeforeBreaking": 3,
+                "DurationOfBreak": 5000,
+                "TimeoutValue": 2000
+            }
+        },
+        {
+            "UpstreamHttpMethod": [ "POST" ],
+            "UpstreamPathTemplate": "/api/v1/protocol/open-id/connect/token",
+            "DownstreamPathTemplate": "/api/v1/protocol/open-id/connect/token",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5286
+                }
+            ],
+            "RateLimitOptions": {
+                "ClientIdHeader": "Client",
+                "EnableRateLimiting": true,
+                "Period": "1s",
+                "Limit": 5
+            },
+            "QoSOptions": {
+                "ExceptionsAllowedBeforeBreaking": 3,
+                "DurationOfBreak": 5000,
+                "TimeoutValue": 2000
+            }
+        },
+        {
+            "UpstreamHttpMethod": [ "POST" ],
+            "UpstreamPathTemplate": "/api/v1/identity",
+            "DownstreamPathTemplate": "/api/v1/identity",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5286
+                }
+            ],
+            "RateLimitOptions": {
+                "ClientIdHeader": "Client",
+                "EnableRateLimiting": true,
+                "Period": "1s",
+                "Limit": 5
+            },
+            "QoSOptions": {
+                "ExceptionsAllowedBeforeBreaking": 3,
+                "DurationOfBreak": 5000,
+                "TimeoutValue": 2000
+            }
+        },
+        {
+            "UpstreamHttpMethod": [ "GET" ],
+            "UpstreamPathTemplate": "/api/v1/identity/principal",
+            "DownstreamPathTemplate": "/api/v1/identity/principal",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5286
+                }
+            ],
+            "RateLimitOptions": {
+                "ClientIdHeader": "Client",
+                "EnableRateLimiting": true,
+                "Period": "1s",
+                "Limit": 5
+            },
+            "QoSOptions": {
+                "ExceptionsAllowedBeforeBreaking": 3,
+                "DurationOfBreak": 5000,
+                "TimeoutValue": 2000
+            }
+        },
+        {
+            "UpstreamHttpMethod": [ "POST" ],
+            "UpstreamPathTemplate": "/api/v1/identity/authenticate",
+            "DownstreamPathTemplate": "/api/v1/identity/authenticate",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5286
+                }
+            ],
+            "RateLimitOptions": {
+                "ClientIdHeader": "Client",
+                "EnableRateLimiting": true,
+                "Period": "1s",
+                "Limit": 5
+            },
+            "QoSOptions": {
+                "ExceptionsAllowedBeforeBreaking": 3,
+                "DurationOfBreak": 5000,
+                "TimeoutValue": 2000
+            }
+        },
+        {
+            "UpstreamHttpMethod": [ "POST" ],
+            "UpstreamPathTemplate": "/api/v1/identity/refresh-token",
+            "DownstreamPathTemplate": "/api/v1/identity/refresh-token",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5286
+                }
+            ],
+            "RateLimitOptions": {
+                "ClientIdHeader": "Client",
+                "EnableRateLimiting": true,
+                "Period": "1s",
+                "Limit": 5
+            },
+            "QoSOptions": {
+                "ExceptionsAllowedBeforeBreaking": 3,
+                "DurationOfBreak": 5000,
+                "TimeoutValue": 2000
+            }
+        },
+        {
+            "UpstreamHttpMethod": [ "POST" ],
+            "UpstreamPathTemplate": "/api/v1/identity/invalidate-session",
+            "DownstreamPathTemplate": "/api/v1/identity/invalidate-session",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5286
+                }
+            ],
+            "RateLimitOptions": {
+                "ClientIdHeader": "Client",
+                "EnableRateLimiting": true,
+                "Period": "1s",
+                "Limit": 5
+            },
+            "QoSOptions": {
+                "ExceptionsAllowedBeforeBreaking": 3,
+                "DurationOfBreak": 5000,
+                "TimeoutValue": 2000
+            }
+        },
+        {
+            "UpstreamHttpMethod": [ "GET", "POST" ],
+            "UpstreamPathTemplate": "/api/v1/groups",
+            "DownstreamPathTemplate": "/api/v1/groups",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5286
+                }
+            ],
+            "RateLimitOptions": {
+                "ClientIdHeader": "Client",
+                "EnableRateLimiting": true,
+                "Period": "1s",
+                "Limit": 5
+            },
+            "QoSOptions": {
+                "ExceptionsAllowedBeforeBreaking": 3,
+                "DurationOfBreak": 5000,
+                "TimeoutValue": 2000
+            }
+        },
+        {
+            "UpstreamHttpMethod": [ "PUT", "DELETE" ],
+            "UpstreamPathTemplate": "/api/v1/groups/{id}",
+            "DownstreamPathTemplate": "/api/v1/groups/{id}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5286
+                }
+            ],
+            "RateLimitOptions": {
+                "ClientIdHeader": "Client",
+                "EnableRateLimiting": true,
+                "Period": "1s",
+                "Limit": 5
+            },
+            "QoSOptions": {
+                "ExceptionsAllowedBeforeBreaking": 3,
+                "DurationOfBreak": 5000,
+                "TimeoutValue": 2000
+            }
+        },
+        {
+            "UpstreamHttpMethod": [ "GET", "POST" ],
+            "UpstreamPathTemplate": "/api/v1/groups/{id}/permissions",
+            "DownstreamPathTemplate": "/api/v1/groups/{id}/permissions",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5286
+                }
+            ],
+            "RateLimitOptions": {
+                "ClientIdHeader": "Client",
+                "EnableRateLimiting": true,
+                "Period": "1s",
+                "Limit": 5
+            },
+            "QoSOptions": {
+                "ExceptionsAllowedBeforeBreaking": 3,
+                "DurationOfBreak": 5000,
+                "TimeoutValue": 2000
+            }
+        },
+        {
+            "UpstreamHttpMethod": [ "DELETE" ],
+            "UpstreamPathTemplate": "/api/v1/groups/{id}/permissions/{permissionId}",
+            "DownstreamPathTemplate": "/api/v1/groups/{id}/permissions/{permissionId}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5286
+                }
+            ],
+            "RateLimitOptions": {
+                "ClientIdHeader": "Client",
+                "EnableRateLimiting": true,
+                "Period": "1s",
+                "Limit": 5
+            },
+            "QoSOptions": {
+                "ExceptionsAllowedBeforeBreaking": 3,
+                "DurationOfBreak": 5000,
+                "TimeoutValue": 2000
+            }
+        },
+        {
+            "UpstreamHttpMethod": [ "GET", "POST" ],
+            "UpstreamPathTemplate": "/api/v1/permissions",
+            "DownstreamPathTemplate": "/api/v1/permissions",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5286
+                }
+            ],
+            "RateLimitOptions": {
+                "ClientIdHeader": "Client",
+                "EnableRateLimiting": true,
+                "Period": "1s",
+                "Limit": 5
+            },
+            "QoSOptions": {
+                "ExceptionsAllowedBeforeBreaking": 3,
+                "DurationOfBreak": 5000,
+                "TimeoutValue": 2000
+            }
+        },
+        {
+            "UpstreamHttpMethod": [ "PUT", "DELETE" ],
+            "UpstreamPathTemplate": "/api/v1/permissions/{id}",
+            "DownstreamPathTemplate": "/api/v1/permissions/{id}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5286
+                }
+            ],
+            "RateLimitOptions": {
+                "ClientIdHeader": "Client",
+                "EnableRateLimiting": true,
+                "Period": "1s",
+                "Limit": 5
+            },
+            "QoSOptions": {
+                "ExceptionsAllowedBeforeBreaking": 3,
+                "DurationOfBreak": 5000,
+                "TimeoutValue": 2000
+            }
+        },
+        {
+            "UpstreamHttpMethod": [ "GET", "POST" ],
+            "UpstreamPathTemplate": "/api/v1/realms",
+            "DownstreamPathTemplate": "/api/v1/realms",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5286
+                }
+            ],
+            "RateLimitOptions": {
+                "ClientIdHeader": "Client",
+                "EnableRateLimiting": true,
+                "Period": "1s",
+                "Limit": 5
+            },
+            "QoSOptions": {
+                "ExceptionsAllowedBeforeBreaking": 3,
+                "DurationOfBreak": 5000,
+                "TimeoutValue": 2000
+            }
+        },
+        {
+            "UpstreamHttpMethod": [ "PUT", "DELETE" ],
+            "UpstreamPathTemplate": "/api/v1/realms/{id}",
+            "DownstreamPathTemplate": "/api/v1/realms/{id}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5286
+                }
+            ],
+            "RateLimitOptions": {
+                "ClientIdHeader": "Client",
+                "EnableRateLimiting": true,
+                "Period": "1s",
+                "Limit": 5
+            },
+            "QoSOptions": {
+                "ExceptionsAllowedBeforeBreaking": 3,
+                "DurationOfBreak": 5000,
+                "TimeoutValue": 2000
+            }
+        },
+        {
+            "UpstreamHttpMethod": [ "GET", "POST" ],
+            "UpstreamPathTemplate": "/api/v1/realms/{id}/permissions",
+            "DownstreamPathTemplate": "/api/v1/realms/{id}/permissions",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5286
+                }
+            ],
+            "RateLimitOptions": {
+                "ClientIdHeader": "Client",
+                "EnableRateLimiting": true,
+                "Period": "1s",
+                "Limit": 5
+            },
+            "QoSOptions": {
+                "ExceptionsAllowedBeforeBreaking": 3,
+                "DurationOfBreak": 5000,
+                "TimeoutValue": 2000
+            }
+        },
+        {
+            "UpstreamHttpMethod": [ "DELETE" ],
+            "UpstreamPathTemplate": "/api/v1/realms/{id}/permissions/{permissionId}",
+            "DownstreamPathTemplate": "/api/v1/realms/{id}/permissions/{permissionId}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5286
+                }
+            ],
+            "RateLimitOptions": {
+                "ClientIdHeader": "Client",
+                "EnableRateLimiting": true,
+                "Period": "1s",
+                "Limit": 5
+            },
+            "QoSOptions": {
+                "ExceptionsAllowedBeforeBreaking": 3,
+                "DurationOfBreak": 5000,
+                "TimeoutValue": 2000
+            }
+        },
+        {
+            "UpstreamHttpMethod": [ "POST" ],
+            "UpstreamPathTemplate": "/api/v1/scopes",
+            "DownstreamPathTemplate": "/api/v1/scopes",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5286
+                }
+            ],
+            "RateLimitOptions": {
+                "ClientIdHeader": "Client",
+                "EnableRateLimiting": true,
+                "Period": "1s",
+                "Limit": 5
+            },
+            "QoSOptions": {
+                "ExceptionsAllowedBeforeBreaking": 3,
+                "DurationOfBreak": 5000,
+                "TimeoutValue": 2000
+            }
+        },
+        {
+            "UpstreamHttpMethod": [ "GET" ],
+            "UpstreamPathTemplate": "/api/v1/users",
+            "DownstreamPathTemplate": "/api/v1/users",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5286
+                }
+            ],
+            "RateLimitOptions": {
+                "ClientIdHeader": "Client",
+                "EnableRateLimiting": true,
+                "Period": "1s",
+                "Limit": 5
+            },
+            "QoSOptions": {
+                "ExceptionsAllowedBeforeBreaking": 3,
+                "DurationOfBreak": 5000,
+                "TimeoutValue": 2000
+            }
+        },
+        {
+            "UpstreamHttpMethod": [ "DELETE" ],
+            "UpstreamPathTemplate": "/api/v1/users/{id}",
+            "DownstreamPathTemplate": "/api/v1/users/{id}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5286
+                }
+            ],
+            "RateLimitOptions": {
+                "ClientIdHeader": "Client",
+                "EnableRateLimiting": true,
+                "Period": "1s",
+                "Limit": 5
+            },
+            "QoSOptions": {
+                "ExceptionsAllowedBeforeBreaking": 3,
+                "DurationOfBreak": 5000,
+                "TimeoutValue": 2000
+            }
+        },
+        {
+            "UpstreamHttpMethod": [ "GET", "POST" ],
+            "UpstreamPathTemplate": "/api/v1/users/{id}/permissions",
+            "DownstreamPathTemplate": "/api/v1/users/{id}/permissions",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5286
+                }
+            ],
+            "RateLimitOptions": {
+                "ClientIdHeader": "Client",
+                "EnableRateLimiting": true,
+                "Period": "1s",
+                "Limit": 5
+            },
+            "QoSOptions": {
+                "ExceptionsAllowedBeforeBreaking": 3,
+                "DurationOfBreak": 5000,
+                "TimeoutValue": 2000
+            }
+        },
+        {
+            "UpstreamHttpMethod": [ "DELETE" ],
+            "UpstreamPathTemplate": "/api/v1/users/{id}/permissions/{permissionId}",
+            "DownstreamPathTemplate": "/api/v1/users/{id}/permissions/{permissionId}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5286
+                }
+            ],
+            "RateLimitOptions": {
+                "ClientIdHeader": "Client",
+                "EnableRateLimiting": true,
+                "Period": "1s",
+                "Limit": 5
+            },
+            "QoSOptions": {
+                "ExceptionsAllowedBeforeBreaking": 3,
+                "DurationOfBreak": 5000,
+                "TimeoutValue": 2000
+            }
+        },
+        {
+            "UpstreamHttpMethod": [ "GET", "POST" ],
+            "UpstreamPathTemplate": "/api/v1/users/{id}/groups",
+            "DownstreamPathTemplate": "/api/v1/users/{id}/groups",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5286
+                }
+            ],
+            "RateLimitOptions": {
+                "ClientIdHeader": "Client",
+                "EnableRateLimiting": true,
+                "Period": "1s",
+                "Limit": 5
+            },
+            "QoSOptions": {
+                "ExceptionsAllowedBeforeBreaking": 3,
+                "DurationOfBreak": 5000,
+                "TimeoutValue": 2000
+            }
+        },
+        {
+            "UpstreamHttpMethod": [ "DELETE" ],
+            "UpstreamPathTemplate": "/api/v1/users/{id}/groups/{groupId}",
+            "DownstreamPathTemplate": "/api/v1/users/{id}/groups/{groupId}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5286
+                }
+            ],
+            "RateLimitOptions": {
+                "ClientIdHeader": "Client",
+                "EnableRateLimiting": true,
+                "Period": "1s",
+                "Limit": 5
+            },
+            "QoSOptions": {
+                "ExceptionsAllowedBeforeBreaking": 3,
+                "DurationOfBreak": 5000,
+                "TimeoutValue": 2000
+            }
+        }
+    ]
+}
