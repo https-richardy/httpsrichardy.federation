@@ -1,0 +1,17 @@
+{
+  "Routes": [
+    {
+      "UpstreamPathTemplate": "/api/v1/identity/authenticate",
+      "UpstreamHttpMethod": [ "POST" ],
+
+      "DownstreamPathTemplate": "/api/v1/identity/authenticate",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "{DOWNSTREAM_HOST}",
+          "Port": 443
+        }
+      ]
+    }
+  ]
+}
