@@ -6,14 +6,16 @@ internal static class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.Services.AddAuthorization();
-        builder.Services.AddOpenApi();
+        builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
+        builder.Configuration.AddEnvironmentVariables();
+
+        builder.Services.AddOcelot(builder.Configuration);
 
         var app = builder.Build();
 
         app.UseHttpsRedirection();
-        app.UseAuthorization();
 
+        await app.UseOcelot();
         await app.RunAsync();
     }
 }
