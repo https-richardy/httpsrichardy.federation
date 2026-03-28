@@ -1,17 +1,30 @@
 {
-  "Routes": [
-    {
-      "UpstreamPathTemplate": "/api/v1/identity/authenticate",
-      "UpstreamHttpMethod": [ "POST" ],
-
-      "DownstreamPathTemplate": "/api/v1/identity/authenticate",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
+    "GlobalConfiguration": {
+        "DownstreamScheme": "{GlobalConfiguration__DownstreamScheme}",
+        "DownstreamHostAndPorts": [
+            {
+                "Host": "{GlobalConfiguration__DownstreamHostAndPorts__0__Host}",
+                "Port": 5286
+            }
+        ]
+    },
+    "Routes": [
         {
-          "Host": "{DOWNSTREAM_HOST}",
-          "Port": 443
+            "UpstreamPathTemplate": "/api/v1/identity/authenticate",
+            "DownstreamPathTemplate": "/api/v1/identity/authenticate",
+            "UpstreamHttpMethod": [
+                "POST"
+            ],
+            "RateLimitOptions": {
+                "EnableRateLimiting": true,
+                "Period": "1s",
+                "Limit": 5
+            },
+            "QoSOptions": {
+                "ExceptionsAllowedBeforeBreaking": 3,
+                "DurationOfBreak": 5000,
+                "TimeoutValue": 2000
+            }
         }
-      ]
-    }
-  ]
+    ]
 }
