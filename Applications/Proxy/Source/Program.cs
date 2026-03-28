@@ -9,7 +9,9 @@ internal static class Program
         builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
         builder.Configuration.AddEnvironmentVariables();
 
-        builder.Services.AddOcelot(builder.Configuration);
+        builder.Services
+            .AddOcelot(builder.Configuration)
+            .AddPolly();
 
         var app = builder.Build();
 
