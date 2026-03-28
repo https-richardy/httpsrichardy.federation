@@ -8,9 +8,11 @@ public static class AuthenticationExtension
         var serviceProvider = services.BuildServiceProvider();
         var secretRepository = serviceProvider.GetRequiredService<ISecretCollection>();
 
-        var secret = secretRepository.GetSecretAsync().GetAwaiter().GetResult();
-        var publicKey = Common.Utilities.RsaHelper.CreateSecurityKeyFromPublicKey(secret.PublicKey);
+        var secret = secretRepository.GetSecretAsync()
+            .GetAwaiter()
+            .GetResult();
 
+        var publicKey = Common.Utilities.RsaHelper.CreateSecurityKeyFromPublicKey(secret.PublicKey);
         var validationParameters = new TokenValidationParameters
         {
             ValidateIssuer = false,
@@ -21,16 +23,18 @@ public static class AuthenticationExtension
             ClockSkew = TimeSpan.Zero
         };
 
-        services.AddAuthentication(options =>
+        var builder = services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
             options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        })
-        .AddJwtBearer(options =>
+        });
+
+        builder.AddJwtBearer(options =>
         {
             options.TokenValidationParameters = validationParameters;
             options.RequireHttpsMetadata = false;
             options.SaveToken = true;
+            options.Events = Authentication.Events;
         });
 
         return services;
