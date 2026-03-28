@@ -42,6 +42,11 @@ public static class AuthenticationErrors
         Description: "The provided client credentials are invalid."
     );
 
+    public static readonly Error Unauthenticated = new(
+        Code: "#ERROR-9B3E1",
+        Description: "Does not contain valid authentication credentials."
+    );
+
     public static readonly Error UserNotFound = new(
         Code: "#ERROR-04A2F",
         Description: "The user was not found."
