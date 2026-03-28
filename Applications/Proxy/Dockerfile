@@ -11,22 +11,22 @@ ARG BUILD_CONFIGURATION=Release
 ARG SOLUTION=HttpsRichardy.Federation.Proxy
 
 # copy only csproj and sln to restore as early as possible
-COPY ["Source/${SOLUTION}.WebApi/${SOLUTION}.WebApi.csproj", "${SOLUTION}.WebApi/"]
+COPY ["Source/${SOLUTION}.csproj", "Source/"]
 COPY ["${SOLUTION}.sln", "./"]
 
 # restore dependencies
-RUN dotnet restore "${SOLUTION}.WebApi/${SOLUTION}.WebApi.csproj"
+RUN dotnet restore "Source/${SOLUTION}.csproj"
 
 # copy the rest of the source code
 COPY Source/ ./Source/
 
-WORKDIR "/workdir/Source/${SOLUTION}.WebApi"
+WORKDIR "/workdir/Source"
 
 # build in Release mode
-RUN dotnet build "${SOLUTION}.WebApi.csproj" -c $BUILD_CONFIGURATION -o /artifacts/build
+RUN dotnet build "${SOLUTION}.csproj" -c $BUILD_CONFIGURATION -o /artifacts/build
 
 # publish the project for production
-RUN dotnet publish "${SOLUTION}.WebApi.csproj" -c $BUILD_CONFIGURATION -o /artifacts/publish /p:UseAppHost=false
+RUN dotnet publish "${SOLUTION}.csproj" -c $BUILD_CONFIGURATION -o /artifacts/publish /p:UseAppHost=false
 
 # final image to run the app
 FROM base AS final
@@ -39,4 +39,4 @@ ENV DOTNET_RUNNING_IN_CONTAINER=true
 # copy published files from the build stage
 COPY --from=build /artifacts/publish .
 
-ENTRYPOINT ["dotnet", "HttpsRichardy.Federation.Proxy.WebApi.dll"]
+ENTRYPOINT ["dotnet", "HttpsRichardy.Federation.Proxy.dll"]

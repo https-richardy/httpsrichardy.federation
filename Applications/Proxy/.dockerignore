@@ -6,9 +6,7 @@
 **/.vscode
 **/TestResults
 
-**/appsettings.json
 **/appsettings.Development.json
-**/appsettings.*.json
 
 .env
 .env.*
