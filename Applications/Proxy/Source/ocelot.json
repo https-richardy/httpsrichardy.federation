@@ -1,21 +1,18 @@
 {
-    "GlobalConfiguration": {
-        "DownstreamScheme": "https",
-        "DownstreamHostAndPorts": [
-            {
-                "Host": "localhost",
-                "Port": 8080
-            }
-        ]
-    },
     "Routes": [
         {
+            "UpstreamHttpMethod": [ "POST" ],
             "UpstreamPathTemplate": "/api/v1/identity/authenticate",
             "DownstreamPathTemplate": "/api/v1/identity/authenticate",
-            "UpstreamHttpMethod": [
-                "POST"
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5286
+                }
             ],
             "RateLimitOptions": {
+                "ClientIdHeader": "Client",
                 "EnableRateLimiting": true,
                 "Period": "1s",
                 "Limit": 5
