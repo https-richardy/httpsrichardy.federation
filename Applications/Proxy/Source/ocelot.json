@@ -1,10 +1,10 @@
 {
     "GlobalConfiguration": {
-        "DownstreamScheme": "{GlobalConfiguration__DownstreamScheme}",
+        "DownstreamScheme": "https",
         "DownstreamHostAndPorts": [
             {
-                "Host": "{GlobalConfiguration__DownstreamHostAndPorts__0__Host}",
-                "Port": 5286
+                "Host": "localhost",
+                "Port": 8080
             }
         ]
     },
