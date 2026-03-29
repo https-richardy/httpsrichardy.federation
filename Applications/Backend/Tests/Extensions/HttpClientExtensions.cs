@@ -9,6 +9,8 @@ public static class HttpClientExtensions
 
         client.DefaultRequestHeaders.Add("realm", realm);
 
+
+
         return client;
     }
 
