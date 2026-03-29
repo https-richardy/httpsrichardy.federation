@@ -27,7 +27,7 @@ public static class OpenApiExtension
                     Type = SecuritySchemeType.ApiKey,
                     Name = Headers.Realm,
                     In = ParameterLocation.Header,
-                    Description = "Realm identifier used to determine the current realm context for the request"
+                    Description = "Realm name used to determine the current realm context for the request"
                 };
 
                 document.Components.SecuritySchemes[SecuritySchemes.OAuth2] = new OpenApiSecurityScheme
