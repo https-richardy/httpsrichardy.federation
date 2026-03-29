@@ -14,6 +14,4 @@ Have you ever stopped to look at a JWT token issued by Keycloak? How many of tho
 
 Ideal for small to medium projects, startups, or teams that need a customizable identity solution without heavy overhead. Not intended to replace enterprise-grade providers in large-scale scenarios, but designed for teams focused on delivering value quickly with minimal complexity.
 
-And to make your life even easier, we provide a .NET SDK that's super simple to consume and integrate. Want to see how it works? Check out the repository here:
-
-https://github.com/https-richardy/httpsrichardy.federation.sdk
+And to make your life even easier, we provide a .NET SDK that's super simple to consume and integrate.
