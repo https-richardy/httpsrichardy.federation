@@ -17,6 +17,11 @@ public static class AuthenticationErrors
         Description: "The token signature is invalid."
     );
 
+    public static readonly Error InvalidIssuer = new(
+        Code: "#ERROR-1A9C3",
+        Description: "The token issuer is invalid."
+    );
+
     public static readonly Error InvalidRefreshToken = new(
         Code: "#ERROR-2C0D9",
         Description: "The provided refresh token is invalid, expired, or has already been used."
