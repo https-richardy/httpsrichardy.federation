@@ -1,0 +1,46 @@
+name: workflow — trigger federation production deployment
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      federation_backend: ${{ steps.filter.outputs.federation_backend }}
+      federation_proxy: ${{ steps.filter.outputs.federation_proxy }}
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: detect changed paths
+        id: filter
+        uses: dorny/paths-filter@v4
+        with:
+          filters: |
+            federation_backend:
+              - 'Applications/Backend/**'
+            federation_proxy:
+              - 'Applications/Proxy/**'
+
+  deploy-federation-backend:
+    needs: changes
+    if: needs.changes.outputs.federation_backend == 'true'
+    uses: ./.github/workflows/template-deployment.yml
+    with:
+      service_path: Applications/Backend
+      image_name: httpsrichardy/federation
+      deploy_url_secret: BACKEND_PRODUCTION_DEPLOY_WEBHOOK_URL
+    secrets: inherit
+
+  deploy-federation-proxy:
+    needs: changes
+    if: needs.changes.outputs.federation_proxy == 'true'
+    uses: ./.github/workflows/template-deployment.yml
+    with:
+      service_path: Applications/Proxy
+      image_name: httpsrichardy/federation.proxy
+      deploy_url_secret: PROXY_PRODUCTION_DEPLOY_WEBHOOK_URL
+    secrets: inherit

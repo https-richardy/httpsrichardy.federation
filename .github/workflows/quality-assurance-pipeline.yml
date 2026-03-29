@@ -3,7 +3,7 @@ name: pipeline ci/cd — trigger pull request quality assurance
 on:
   pull_request:
     branches:
-      - main
+      - master
 
 jobs:
   changes:

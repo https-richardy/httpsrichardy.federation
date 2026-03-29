@@ -1,0 +1,55 @@
+name: pipeline ci/cd - publish federation package
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'Packages/Federation.Sdk/**'
+      - 'Packages/Federation.Sdk.Contracts/**'
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+
+    outputs:
+      federation_sdk: ${{ steps.filter.outputs.federation_sdk }}
+      federation_sdk_contracts: ${{ steps.filter.outputs.federation_sdk_contracts }}
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: detect changed paths
+        id: filter
+        uses: dorny/paths-filter@v4
+        with:
+          filters: |
+            federation_sdk:
+              - 'Packages/Federation.Sdk/**'
+            federation_sdk_contracts:
+              - 'Packages/Federation.Sdk.Contracts/**'
+
+  # publish this package if there are changes in the corresponding path
+  publish-federation-sdk:
+    needs: changes
+    if: needs.changes.outputs.federation_sdk == 'true'
+    uses: ./.github/workflows/template-publish-package.yml
+    with:
+      working_directory: Packages/Federation.Sdk/Source
+      dotnet_version: 9.0.x
+      base_version: "1.0"
+    secrets: inherit
+
+  # publish this package if there are changes in the corresponding path
+  publish-federation-sdk-contracts:
+    needs: changes
+    if: needs.changes.outputs.federation_sdk_contracts == 'true'
+    uses: ./.github/workflows/template-publish-package.yml
+    with:
+      working_directory: Packages/Federation.Sdk.Contracts/Source
+      dotnet_version: 9.0.x
+      base_version: "1.0"
+    secrets: inherit
