@@ -2,7 +2,7 @@
 
 public sealed class RedirectUriPolicy : IRedirectUriPolicy
 {
-    public async Task<Result> EnsureRedirectUriIsAllowedAsync(
+    public Task<Result> EnsureRedirectUriIsAllowedAsync(
         Realm realm, RedirectUri redirectUri, CancellationToken cancellation = default)
     {
         // according to oauth 2.0 spec (RFC 6749, section 3.1.2.3):
@@ -11,7 +11,7 @@ public sealed class RedirectUriPolicy : IRedirectUriPolicy
         var isAllowed = realm.RedirectUris.Contains(redirectUri);
 
         return isAllowed ?
-            Result.Success() :
-            Result.Failure(AuthorizationErrors.RedirectUriNotAllowed);
+            Task.FromResult(Result.Success()) :
+            Task.FromResult(Result.Failure(AuthorizationErrors.RedirectUriNotAllowed));
     }
 }

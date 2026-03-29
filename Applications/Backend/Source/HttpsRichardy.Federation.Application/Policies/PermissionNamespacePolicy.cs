@@ -2,14 +2,14 @@
 
 public sealed class PermissionNamespacePolicy : IPermissionNamespacePolicy
 {
-    public async Task<Result> EnsurePermissionIsAllowedAsync(
+    public Task<Result> EnsurePermissionIsAllowedAsync(
         Realm realm, Permission permission, CancellationToken cancellation = default)
     {
         var isReserved = RealmPermissions.SystemPermissions
             .Contains(permission.Name);
 
         return isReserved
-            ? Result.Failure(PermissionErrors.PermissionNameIsReserved)
-            : Result.Success();
+            ? Task.FromResult(Result.Failure(PermissionErrors.PermissionNameIsReserved))
+            : Task.FromResult(Result.Success());
     }
 }
