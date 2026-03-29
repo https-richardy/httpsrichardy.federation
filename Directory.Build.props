@@ -1,0 +1,13 @@
+<Project>
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!--
+        Disabled CS8509 to allow switch expressions without a default case,
+        assuming exhaustiveness is guaranteed by controlled types
+    -->
+    <NoWarn>$(NoWarn);CS8509</NoWarn>
+  </PropertyGroup>
+</Project>

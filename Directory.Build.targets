@@ -1,0 +1,6 @@
+<Project>
+  <Target Name="ValidateAppSettings" BeforeTargets="Build">
+    <Error Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' AND !Exists('$(ProjectDir)appsettings.json')"
+           Text="appsettings.json is required for web projects." />
+  </Target>
+</Project>
