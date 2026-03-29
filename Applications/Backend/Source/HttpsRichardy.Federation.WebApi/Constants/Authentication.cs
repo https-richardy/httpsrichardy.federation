@@ -26,6 +26,31 @@ public static class Authentication
             return context.Response.WriteAsync(JsonSerializer.Serialize(AuthenticationErrors.InvalidTokenFormat, _serializer));
         },
 
+        OnTokenValidated = context =>
+        {
+            var request = context.HttpContext.Request;
+            if (context.SecurityToken is not Microsoft.IdentityModel.JsonWebTokens.JsonWebToken token)
+            {
+                context.HttpContext.Items["authentication.error"] = AuthenticationErrors.InvalidTokenFormat;
+                context.Fail("The token format is invalid or the token is malformed.");
+
+                return Task.CompletedTask;
+            }
+
+            var expectedIssuer = $"{request.Scheme}://{request.Host}".TrimEnd('/');
+            var actualIssuer = token.Issuer?.TrimEnd('/');
+
+            if (!string.Equals(actualIssuer, expectedIssuer, StringComparison.OrdinalIgnoreCase))
+            {
+                context.HttpContext.Items["authentication.error"] = AuthenticationErrors.InvalidIssuer;
+                context.Fail("The token issuer is invalid.");
+
+                return Task.CompletedTask;
+            }
+
+            return Task.CompletedTask;
+        },
+
         OnChallenge = context =>
         {
             context.HandleResponse();
@@ -36,7 +61,11 @@ public static class Authentication
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             context.Response.ContentType = MediaTypeNames.Application.Json;
 
-            return context.Response.WriteAsync(JsonSerializer.Serialize(AuthenticationErrors.Unauthenticated, _serializer));
+            var error = context.HttpContext.Items["authentication.error"] as Error
+                        ?? AuthenticationErrors.Unauthenticated;
+
+            return context.Response.WriteAsync(JsonSerializer.Serialize(error, _serializer));
         }
     };
 }
+
