@@ -1,51 +1,65 @@
-name: workflow - trigger pull request quality assurance
+name: pipeline ci/cd — trigger pull request quality assurance
 
 on:
   pull_request:
     branches:
-      - master
+      - main
 
 jobs:
   changes:
     runs-on: ubuntu-latest
     outputs:
-      backend: ${{ steps.filter.outputs.backend }}
+      federation_backend: ${{ steps.filter.outputs.federation_backend }}
+      federation_proxy: ${{ steps.filter.outputs.federation_proxy }}
+      federation_contracts: ${{ steps.filter.outputs.federation_contracts }}
       federation_sdk: ${{ steps.filter.outputs.federation_sdk }}
-      federation_sdk_contracts: ${{ steps.filter.outputs.federation_sdk_contracts }}
 
     steps:
       - name: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: detect changed paths
         id: filter
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@v4
         with:
           filters: |
-            backend:
+            federation_backend:
               - 'Applications/Backend/**'
+            federation_proxy:
+              - 'Applications/Proxy/**'
+            federation_contracts:
+              - 'Packages/Federation.Sdk.Contracts/**'
             federation_sdk:
               - 'Packages/Federation.Sdk/**'
-            federation_sdk_contracts:
-              - 'Packages/Federation.Sdk.Contracts/**'
 
+  # run build and tests for federation backend if there are changes in the corresponding path
   quality-assurance-backend:
     needs: changes
-    if: needs.changes.outputs.backend == 'true'
-    uses: ./.github/workflows/reusable-quality-assurance.yml
+    if: needs.changes.outputs.federation_backend == 'true'
+    uses: ./.github/workflows/template-quality-assurance.yml
     with:
       service_path: Applications/Backend
 
-  quality-assurance-federation-sdk:
+  # run build and tests for federation proxy if there are changes in the corresponding path
+  quality-assurance-proxy:
     needs: changes
-    if: needs.changes.outputs.federation_sdk == 'true'
-    uses: ./.github/workflows/reusable-quality-assurance.yml
+    if: needs.changes.outputs.federation_proxy == 'true'
+    uses: ./.github/workflows/template-quality-assurance.yml
     with:
-      service_path: Packages/Federation.Sdk
+      service_path: Applications/Proxy
 
-  quality-assurance-federation-sdk-contracts:
+  # run build and tests for federation contracts if there are changes in the corresponding path
+  quality-assurance-contracts:
     needs: changes
-    if: needs.changes.outputs.federation_sdk_contracts == 'true'
-    uses: ./.github/workflows/reusable-quality-assurance.yml
+    if: needs.changes.outputs.federation_contracts == 'true'
+    uses: ./.github/workflows/template-quality-assurance.yml
     with:
       service_path: Packages/Federation.Sdk.Contracts
+
+  # run build and tests for federation sdk if there are changes in the corresponding path
+  quality-assurance-sdk:
+    needs: changes
+    if: needs.changes.outputs.federation_sdk == 'true'
+    uses: ./.github/workflows/template-quality-assurance.yml
+    with:
+      service_path: Packages/Federation.Sdk
