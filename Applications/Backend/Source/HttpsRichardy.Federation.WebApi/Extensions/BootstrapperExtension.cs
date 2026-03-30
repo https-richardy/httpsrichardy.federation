@@ -9,7 +9,6 @@ public static class BootstrapperExtension
 
         var realmCollection = scope.ServiceProvider.GetRequiredService<IRealmCollection>();
         var userCollection = scope.ServiceProvider.GetRequiredService<IUserCollection>();
-        var scopeRepository = scope.ServiceProvider.GetRequiredService<IScopeCollection>();
         var permissionCollection = scope.ServiceProvider.GetRequiredService<IPermissionCollection>();
 
         var realmProvider = scope.ServiceProvider.GetRequiredService<IRealmProvider>();
@@ -40,19 +39,9 @@ public static class BootstrapperExtension
             RealmId = defaultRealm.Id
         })];
 
-        var scopes = new List<Scope>
-        {
-            new() { Id = Identifier.Generate<Scope>(), Name = Scopes.OpenID.Name,  Description = Scopes.OpenID.Description,  IsGlobal = true },
-            new() { Id = Identifier.Generate<Scope>(), Name = Scopes.Profile.Name, Description = Scopes.Profile.Description, IsGlobal = true },
-            new() { Id = Identifier.Generate<Scope>(), Name = Scopes.Email.Name,   Description = Scopes.Email.Description,   IsGlobal = true },
-            new() { Id = Identifier.Generate<Scope>(), Name = Scopes.Address.Name, Description = Scopes.Address.Description, IsGlobal = true },
-            new() { Id = Identifier.Generate<Scope>(), Name = Scopes.Phone.Name,   Description = Scopes.Phone.Description,   IsGlobal = true },
-        };
-
         realmProvider.SetRealm(defaultRealm);
 
         await realmCollection.InsertAsync(defaultRealm);
-        await scopeRepository.InsertManyAsync(scopes);
         await permissionCollection.InsertManyAsync(defaultRealm.Permissions);
 
         var userFilters = UserFilters.WithSpecifications()

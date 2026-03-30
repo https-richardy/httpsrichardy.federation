@@ -22,9 +22,4 @@ public static class Permissions
     public const string DeleteRealm = "federation.defaults.permissions.realm.delete";
     public const string EditRealm = "federation.defaults.permissions.realm.update";
     public const string ViewRealms = "federation.defaults.permissions.realm.view";
-
-    public const string CreateScope = "federation.defaults.permissions.scopes.create";
-    public const string EditScope = "federation.defaults.permissions.scopes.update";
-    public const string DeleteScope = "federation.defaults.permissions.scopes.delete";
-    public const string ViewScopes = "federation.defaults.permissions.scopes.view";
 }

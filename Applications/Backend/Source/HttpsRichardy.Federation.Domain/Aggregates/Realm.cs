@@ -10,5 +10,4 @@ public sealed class Realm : Aggregate
 
     public ICollection<Permission> Permissions { get; set; } = [];
     public ICollection<RedirectUri> RedirectUris { get; set; } = [];
-    public ICollection<Scope> Scopes { get; set; } = [];
 }

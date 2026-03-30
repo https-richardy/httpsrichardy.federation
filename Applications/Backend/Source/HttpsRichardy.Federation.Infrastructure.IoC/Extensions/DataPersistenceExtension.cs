@@ -18,7 +18,6 @@ public static class DataPersistenceExtension
         services.AddTransient<IUserCollection, UserCollection>();
         services.AddTransient<IPermissionCollection, PermissionCollection>();
         services.AddTransient<IGroupCollection, GroupCollection>();
-        services.AddTransient<IScopeCollection, ScopesCollection>();
         services.AddTransient<ITokenCollection, TokenCollection>();
         services.AddTransient<IRealmCollection, RealmCollection>();
         services.AddTransient<ISecretCollection, SecretCollection>();

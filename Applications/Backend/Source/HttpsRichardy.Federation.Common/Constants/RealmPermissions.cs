@@ -19,11 +19,6 @@ public static class RealmPermissions
         Permissions.ViewPermissions,
         Permissions.EditPermission,
         Permissions.DeletePermission,
-
-        Permissions.CreateScope,
-        Permissions.EditScope,
-        Permissions.DeleteGroup,
-        Permissions.ViewScopes
     ];
 
     public static readonly HashSet<string> SystemPermissions =
@@ -47,11 +42,6 @@ public static class RealmPermissions
         Permissions.CreateRealm,
         Permissions.DeleteRealm,
         Permissions.EditRealm,
-        Permissions.ViewRealms,
-
-        Permissions.CreateScope,
-        Permissions.EditScope,
-        Permissions.DeleteScope,
-        Permissions.ViewScopes
+        Permissions.ViewRealms
     ];
 }
