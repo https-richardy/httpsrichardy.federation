@@ -29,9 +29,17 @@ jobs:
         with:
             fetch-depth: 0
 
+      - name: setup gitversion
+        uses: gittools/actions/gitversion/setup@v0
+        with:
+            versionSpec: '5.x'
+
       - name: GitVersion
         uses: gittools/actions/gitversion/execute@v0
         id: gitversion
+
+      - name: show version
+        run: echo "version - ${{ steps.gitversion.outputs.semVer }}"
 
       - name: build docker image
         run: docker build -t ${{ inputs.image_name }}:latest -t ${{ inputs.image_name }}:${{ steps.gitversion.outputs.semVer }} .
