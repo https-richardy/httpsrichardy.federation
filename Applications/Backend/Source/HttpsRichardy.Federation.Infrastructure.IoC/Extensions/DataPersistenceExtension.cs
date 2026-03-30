@@ -10,6 +10,8 @@ public static class DataPersistenceExtension
             var mongoClient = new MongoClient(settings.Database.ConnectionString);
             var database = mongoClient.GetDatabase(settings.Database.DatabaseName);
 
+            database.EnsureIndexes();
+
             return database;
         });
 
