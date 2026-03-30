@@ -38,7 +38,7 @@
                 "ClientIdHeader": "Client",
                 "EnableRateLimiting": true,
                 "Period": "1s",
-                "Limit": 5
+                "Limit": 20
             },
             "QoSOptions": {
                 "ExceptionsAllowedBeforeBreaking": 3,
@@ -61,7 +61,7 @@
                 "ClientIdHeader": "Client",
                 "EnableRateLimiting": true,
                 "Period": "1s",
-                "Limit": 5
+                "Limit": 20
             },
             "QoSOptions": {
                 "ExceptionsAllowedBeforeBreaking": 3,
@@ -84,7 +84,7 @@
                 "ClientIdHeader": "Client",
                 "EnableRateLimiting": true,
                 "Period": "1s",
-                "Limit": 5
+                "Limit": 20
             },
             "QoSOptions": {
                 "ExceptionsAllowedBeforeBreaking": 3,
@@ -107,7 +107,7 @@
                 "ClientIdHeader": "Client",
                 "EnableRateLimiting": true,
                 "Period": "1s",
-                "Limit": 5
+                "Limit": 20
             },
             "QoSOptions": {
                 "ExceptionsAllowedBeforeBreaking": 3,
@@ -130,7 +130,7 @@
                 "ClientIdHeader": "Client",
                 "EnableRateLimiting": true,
                 "Period": "1s",
-                "Limit": 5
+                "Limit": 20
             },
             "QoSOptions": {
                 "ExceptionsAllowedBeforeBreaking": 3,
@@ -153,7 +153,7 @@
                 "ClientIdHeader": "Client",
                 "EnableRateLimiting": true,
                 "Period": "1s",
-                "Limit": 5
+                "Limit": 20
             },
             "QoSOptions": {
                 "ExceptionsAllowedBeforeBreaking": 3,
@@ -176,7 +176,7 @@
                 "ClientIdHeader": "Client",
                 "EnableRateLimiting": true,
                 "Period": "1s",
-                "Limit": 5
+                "Limit": 20
             },
             "QoSOptions": {
                 "ExceptionsAllowedBeforeBreaking": 3,
@@ -199,7 +199,7 @@
                 "ClientIdHeader": "Client",
                 "EnableRateLimiting": true,
                 "Period": "1s",
-                "Limit": 5
+                "Limit": 20
             },
             "QoSOptions": {
                 "ExceptionsAllowedBeforeBreaking": 3,
@@ -222,7 +222,7 @@
                 "ClientIdHeader": "Client",
                 "EnableRateLimiting": true,
                 "Period": "1s",
-                "Limit": 5
+                "Limit": 20
             },
             "QoSOptions": {
                 "ExceptionsAllowedBeforeBreaking": 3,
@@ -245,7 +245,7 @@
                 "ClientIdHeader": "Client",
                 "EnableRateLimiting": true,
                 "Period": "1s",
-                "Limit": 5
+                "Limit": 20
             },
             "QoSOptions": {
                 "ExceptionsAllowedBeforeBreaking": 3,
@@ -268,7 +268,7 @@
                 "ClientIdHeader": "Client",
                 "EnableRateLimiting": true,
                 "Period": "1s",
-                "Limit": 5
+                "Limit": 20
             },
             "QoSOptions": {
                 "ExceptionsAllowedBeforeBreaking": 3,
@@ -291,7 +291,7 @@
                 "ClientIdHeader": "Client",
                 "EnableRateLimiting": true,
                 "Period": "1s",
-                "Limit": 5
+                "Limit": 20
             },
             "QoSOptions": {
                 "ExceptionsAllowedBeforeBreaking": 3,
@@ -314,7 +314,7 @@
                 "ClientIdHeader": "Client",
                 "EnableRateLimiting": true,
                 "Period": "1s",
-                "Limit": 5
+                "Limit": 20
             },
             "QoSOptions": {
                 "ExceptionsAllowedBeforeBreaking": 3,
@@ -337,7 +337,7 @@
                 "ClientIdHeader": "Client",
                 "EnableRateLimiting": true,
                 "Period": "1s",
-                "Limit": 5
+                "Limit": 20
             },
             "QoSOptions": {
                 "ExceptionsAllowedBeforeBreaking": 3,
@@ -360,7 +360,7 @@
                 "ClientIdHeader": "Client",
                 "EnableRateLimiting": true,
                 "Period": "1s",
-                "Limit": 5
+                "Limit": 20
             },
             "QoSOptions": {
                 "ExceptionsAllowedBeforeBreaking": 3,
@@ -383,7 +383,7 @@
                 "ClientIdHeader": "Client",
                 "EnableRateLimiting": true,
                 "Period": "1s",
-                "Limit": 5
+                "Limit": 20
             },
             "QoSOptions": {
                 "ExceptionsAllowedBeforeBreaking": 3,
@@ -406,7 +406,7 @@
                 "ClientIdHeader": "Client",
                 "EnableRateLimiting": true,
                 "Period": "1s",
-                "Limit": 5
+                "Limit": 20
             },
             "QoSOptions": {
                 "ExceptionsAllowedBeforeBreaking": 3,
@@ -429,7 +429,7 @@
                 "ClientIdHeader": "Client",
                 "EnableRateLimiting": true,
                 "Period": "1s",
-                "Limit": 5
+                "Limit": 20
             },
             "QoSOptions": {
                 "ExceptionsAllowedBeforeBreaking": 3,
@@ -452,7 +452,7 @@
                 "ClientIdHeader": "Client",
                 "EnableRateLimiting": true,
                 "Period": "1s",
-                "Limit": 5
+                "Limit": 20
             },
             "QoSOptions": {
                 "ExceptionsAllowedBeforeBreaking": 3,
@@ -475,7 +475,7 @@
                 "ClientIdHeader": "Client",
                 "EnableRateLimiting": true,
                 "Period": "1s",
-                "Limit": 5
+                "Limit": 20
             },
             "QoSOptions": {
                 "ExceptionsAllowedBeforeBreaking": 3,
@@ -498,7 +498,7 @@
                 "ClientIdHeader": "Client",
                 "EnableRateLimiting": true,
                 "Period": "1s",
-                "Limit": 5
+                "Limit": 20
             },
             "QoSOptions": {
                 "ExceptionsAllowedBeforeBreaking": 3,
@@ -521,7 +521,7 @@
                 "ClientIdHeader": "Client",
                 "EnableRateLimiting": true,
                 "Period": "1s",
-                "Limit": 5
+                "Limit": 20
             },
             "QoSOptions": {
                 "ExceptionsAllowedBeforeBreaking": 3,
@@ -544,7 +544,7 @@
                 "ClientIdHeader": "Client",
                 "EnableRateLimiting": true,
                 "Period": "1s",
-                "Limit": 5
+                "Limit": 20
             },
             "QoSOptions": {
                 "ExceptionsAllowedBeforeBreaking": 3,
@@ -567,7 +567,7 @@
                 "ClientIdHeader": "Client",
                 "EnableRateLimiting": true,
                 "Period": "1s",
-                "Limit": 5
+                "Limit": 20
             },
             "QoSOptions": {
                 "ExceptionsAllowedBeforeBreaking": 3,
