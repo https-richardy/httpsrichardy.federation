@@ -18,7 +18,10 @@ public static class QueryParametersParser
             string name = ToCamelCase(property.Name);
             string stringValue = value switch
             {
-                bool builder => builder.ToString().ToLowerInvariant(),
+                bool builder => builder
+                    .ToString()
+                    .ToLowerInvariant(),
+
                 _ => value?.ToString() ?? string.Empty
             };
 
