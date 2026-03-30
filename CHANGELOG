@@ -1,3 +1,7 @@
+# 3.1.1 - 2026-03-30
+
+this release includes internal improvements and performance optimizations to enhance the overall system efficiency. We removed unused experimental scope-related code that is no longer required and introduced new database indexes to improve query performance. These changes help ensure faster and more reliable data access while maintaining existing functionality without breaking changes.
+
 # 3.0.0 - 2026-03-29
 
 - in version 3.0.0 of the Docker image, we fixed a security vulnerability in the backend authentication flow affecting protected administrative endpoints. This release strengthens issuer and token validation across different hosting contexts, ensuring safer token acceptance and clearer authentication error tracking.
