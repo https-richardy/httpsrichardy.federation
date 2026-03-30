@@ -22,6 +22,5 @@ public static class ValidationExtension
 
         services.AddTransient<IValidator<AssignUserPermissionScheme>, AssignUserPermissionValidator>();
         services.AddTransient<IValidator<AssignRealmPermissionScheme>, AssignRealmPermissionValidator>();
-        services.AddTransient<IValidator<ScopeCreationScheme>, ScopeCreationValidator>();
     }
 }

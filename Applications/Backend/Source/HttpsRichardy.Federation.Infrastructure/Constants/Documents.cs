@@ -27,14 +27,6 @@ public static class Documents
         public const string IsDeleted = nameof(Domain.Aggregates.Group.IsDeleted);
     }
 
-    public static class Scope
-    {
-        public const string Id = "_id";
-        public const string RealmId = nameof(Domain.Aggregates.Scope.RealmId);
-        public const string Name = nameof(Domain.Aggregates.Scope.Name);
-        public const string IsDeleted = nameof(Domain.Aggregates.Group.IsDeleted);
-    }
-
     public static class Realm
     {
         public const string Name = nameof(Domain.Aggregates.Realm.Name);

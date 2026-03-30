@@ -76,15 +76,6 @@ Federation Gateway is designed to provide clear, actionable error feedback for e
 
 ---
 
-## SCOPE ERRORS
-
-| Code           | Description                                                        | Cause                                                      | Resolution                                  |
-|----------------|--------------------------------------------------------------------|------------------------------------------------------------|----------------------------------------------|
-| #ERROR-8D128   | The scope with the specified name already exists.                  | Scope name conflict.                                       | Use a different scope name.                 |
-| #ERROR-903F9   | The scope with the specified name does not exist.                  | Scope not found.                                           | Check scope existence.                      |
-
----
-
 ## USER ERRORS
 
 | Code           | Description                                                        | Cause                                                      | Resolution                                  |
