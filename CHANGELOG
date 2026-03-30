@@ -1,3 +1,10 @@
+# 9.0.0 - 2026-03-30
+
+**Performance improvement in authentication flow:**
+During load testing with 50 concurrent users on a 1 vCPU, 4GB RAM VPS, we observed that the login endpoint was a bottleneck, showing high latency and a large number of rate-limited requests. The root cause was the use of PBKDF2 password hashing with an iteration count set for maximum security (400,000), which proved too computationally expensive for the available infrastructure. This led to CPU saturation, slow logins, and aggressive rate limiting under load, while other endpoints remained unaffected.
+
+To address this, we have tuned the PBKDF2 iteration count to a value that maintains strong security but is more appropriate for typical server resources. This change significantly reduces CPU usage during login, resulting in much better performance and stability under concurrent access, while still following industry best practices for password security.
+
 # 3.0.0 - 2026-03-29
 
 - In version 3.0.0 of the Docker image, we fixed a security vulnerability in the backend authentication flow affecting protected administrative endpoints. This release strengthens issuer and token validation across different hosting contexts, ensuring safer token acceptance and clearer authentication error tracking.
