@@ -40,7 +40,6 @@ jobs:
     with:
       working_directory: Packages/Federation.Sdk/Source
       dotnet_version: 9.0.x
-      base_version: "1.0"
     secrets: inherit
 
   # publish this package if there are changes in the corresponding path
@@ -51,5 +50,4 @@ jobs:
     with:
       working_directory: Packages/Federation.Sdk.Contracts/Source
       dotnet_version: 9.0.x
-      base_version: "1.0"
     secrets: inherit

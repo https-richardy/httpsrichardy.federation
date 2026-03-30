@@ -14,12 +14,6 @@ on:
         type: string
         default: 9.0.x
 
-      base_version:
-        description: base semantic version
-        required: false
-        type: string
-        default: "1.0"
-
       publish_package:
         description: if false, runs restore/build/pack without pushing
         required: false
@@ -38,6 +32,15 @@ jobs:
         working-directory: ${{ inputs.working_directory }}
 
     steps:
+      - name: setup gitversion
+        uses: gittools/actions/gitversion/setup@v0
+        with:
+          versionSpec: '5.x'
+
+      - name: semantic versioning
+        uses: gittools/actions/gitversion/execute@v0
+        id: gitversion
+
       - name: checkout code
         uses: actions/checkout@v5
 
@@ -57,18 +60,10 @@ jobs:
 
       - name: set version and pack
         id: pack
-        env:
-          BASE_VERSION: ${{ inputs.base_version }}
         run: |
-          if [[ "${GITHUB_REF}" == "refs/heads/master" ]]; then
-            VERSION="${BASE_VERSION}.${GITHUB_RUN_NUMBER}"
-          else
-            VERSION="${BASE_VERSION}-beta.${GITHUB_RUN_NUMBER}"
-          fi
-
+          VERSION="${{ steps.gitversion.outputs.semVer }}"
           echo "use version: $VERSION"
           dotnet pack -c Release -p:PackageVersion=$VERSION -o ./output --no-build
-
           echo "package_version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: push package to nuget
