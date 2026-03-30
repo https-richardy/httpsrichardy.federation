@@ -32,6 +32,11 @@ jobs:
         working-directory: ${{ inputs.working_directory }}
 
     steps:
+      - name: checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
       - name: setup gitversion
         uses: gittools/actions/gitversion/setup@v0
         with:
@@ -40,9 +45,6 @@ jobs:
       - name: semantic versioning
         uses: gittools/actions/gitversion/execute@v0
         id: gitversion
-
-      - name: checkout code
-        uses: actions/checkout@v5
 
       - name: setup .NET
         uses: actions/setup-dotnet@v4
