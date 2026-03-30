@@ -19,7 +19,7 @@ public static class SecretsExtension
             secret = new Secret
             {
                 PrivateKey = Convert.ToBase64String(rsa.ExportRSAPrivateKey()),
-                PublicKey = Convert.ToBase64String(rsa.ExportRSAPublicKey())
+                PublicKey  = Convert.ToBase64String(rsa.ExportRSAPublicKey())
             };
 
             secretRepository.InsertAsync(secret)
