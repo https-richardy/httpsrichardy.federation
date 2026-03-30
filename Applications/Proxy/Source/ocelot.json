@@ -15,12 +15,12 @@
                 "ClientIdHeader": "Client",
                 "EnableRateLimiting": true,
                 "Period": "1s",
-                "Limit": 5
+                "Limit": 20
             },
             "QoSOptions": {
                 "ExceptionsAllowedBeforeBreaking": 3,
                 "DurationOfBreak": 5000,
-                "TimeoutValue": 2000
+                "TimeoutValue": 25000
             }
         },
         {
