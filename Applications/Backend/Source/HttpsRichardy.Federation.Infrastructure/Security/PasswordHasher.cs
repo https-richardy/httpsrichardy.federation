@@ -4,7 +4,7 @@ public sealed class PasswordHasher : IPasswordHasher
 {
     private const int SaltSize = 16;
     private const int KeySize = 32;
-    private const int Iterations = 400_000;
+    private const int Iterations = 70_000;
 
     public Task<string> HashPasswordAsync(string password)
     {
