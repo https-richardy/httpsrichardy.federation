@@ -34,7 +34,7 @@ jobs:
         with:
             versionSpec: '5.x'
 
-      - name: GitVersion
+      - name: semantic versioning
         uses: gittools/actions/gitversion/execute@v0
         id: gitversion
 
