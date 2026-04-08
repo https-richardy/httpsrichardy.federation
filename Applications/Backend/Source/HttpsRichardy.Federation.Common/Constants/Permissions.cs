@@ -22,4 +22,9 @@ public static class Permissions
     public const string DeleteRealm = "federation.defaults.permissions.realm.delete";
     public const string EditRealm = "federation.defaults.permissions.realm.update";
     public const string ViewRealms = "federation.defaults.permissions.realm.view";
+
+    public const string CreateClient = "federation.defaults.permissions.client.create";
+    public const string DeleteClient = "federation.defaults.permissions.client.delete";
+    public const string EditClient = "federation.defaults.permissions.client.update";
+    public const string ViewClients = "federation.defaults.permissions.client.view";
 }
