@@ -1,3 +1,5 @@
+global using System.Text;
+
 global using HttpsRichardy.Federation.Domain.Aggregates;
 global using HttpsRichardy.Federation.Domain.Concepts;
 global using HttpsRichardy.Federation.Domain.Filtering;
