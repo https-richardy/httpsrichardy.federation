@@ -9,4 +9,12 @@ public sealed class ClientFiltersBuilder : FiltersBuilderBase<ClientFilters, Cli
 
         return this;
     }
+
+    public ClientFiltersBuilder WithRealmId(string? realmId)
+    {
+        if (!string.IsNullOrWhiteSpace(realmId))
+            _filters.RealmId = realmId.Trim().Normalize(NormalizationForm.FormC);
+
+        return this;
+    }
 }
