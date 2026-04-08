@@ -44,6 +44,8 @@ public static class BootstrapperExtension
         defaultClient.Secret = await passwordHasher.HashPasswordAsync(clientCredentials.ClientId + defaultRealm.Name);
         defaultClient.Permissions = [.. defaultRealm.Permissions];
 
+        defaultRealm.Clients = [defaultClient];
+
         realmProvider.SetRealm(defaultRealm);
 
         await realmCollection.InsertAsync(defaultRealm);
