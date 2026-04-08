@@ -2,12 +2,10 @@ namespace HttpsRichardy.Federation.Application.Mappers;
 
 public static class RealmMapper
 {
-    public static Realm AsRealm(RealmCreationScheme realm, string clientId, string secretHash) => new()
+    public static Realm AsRealm(RealmCreationScheme realm) => new()
     {
         Name = realm.Name,
-        Description = realm.Description ?? string.Empty,
-        ClientId = clientId,
-        SecretHash = secretHash
+        Description = realm.Description ?? string.Empty
     };
 
     public static Realm AsRealm(RealmUpdateScheme payload, Realm realm)
@@ -24,9 +22,7 @@ public static class RealmMapper
     {
         Id = realm.Id.ToString(),
         Name = realm.Name,
-        Description = realm.Description,
-        ClientId = realm.ClientId,
-        ClientSecret = realm.SecretHash
+        Description = realm.Description
     };
 
     public static RealmFilters AsFilters(RealmFetchParameters parameters) => new()
