@@ -23,6 +23,7 @@ global using HttpsRichardy.Federation.Domain.Collections;
 global using HttpsRichardy.Federation.Common.Constants;
 global using HttpsRichardy.Federation.Common.Configuration;
 global using HttpsRichardy.Federation.Domain.Errors;
+global using HttpsRichardy.Federation.Domain.Concepts;
 
 global using HttpsRichardy.Federation.Application.Payloads.Group;
 global using HttpsRichardy.Federation.Application.Payloads.Identity;
