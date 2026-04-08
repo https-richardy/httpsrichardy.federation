@@ -34,6 +34,14 @@ public static class Documents
         public const string Id = "_id";
     }
 
+    public static class Client
+    {
+        public const string Name = nameof(Domain.Aggregates.Client.Name);
+        public const string RealmId = nameof(Domain.Aggregates.Client.RealmId);
+        public const string IsDeleted = nameof(Domain.Aggregates.Client.IsDeleted);
+        public const string Id = "_id";
+    }
+
     public static class SecurityToken
     {
         public const string Value = nameof(Domain.Aggregates.SecurityToken.Value);
