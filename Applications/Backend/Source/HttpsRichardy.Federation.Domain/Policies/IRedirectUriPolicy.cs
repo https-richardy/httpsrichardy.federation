@@ -8,7 +8,7 @@
 public interface IRedirectUriPolicy
 {
     public Task<Result> EnsureRedirectUriIsAllowedAsync(
-        Realm realm,
+        Client client,
         RedirectUri redirectUri,
         CancellationToken cancellation = default
     );

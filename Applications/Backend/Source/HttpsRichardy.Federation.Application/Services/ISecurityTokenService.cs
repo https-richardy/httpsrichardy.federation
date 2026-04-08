@@ -8,7 +8,7 @@ public interface ISecurityTokenService
     );
 
     public Task<Result<SecurityToken>> GenerateAccessTokenAsync(
-        Realm realm,
+        Client client,
         CancellationToken cancellation = default
     );
 
