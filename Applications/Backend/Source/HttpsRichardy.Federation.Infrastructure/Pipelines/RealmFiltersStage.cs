@@ -8,7 +8,6 @@ public static class RealmFiltersStage
         var definitions = new List<FilterDefinition<BsonDocument>>
         {
             FilterDefinitions.MatchIfNotEmpty(Documents.Realm.Name, filters.Name),
-            FilterDefinitions.MatchIfNotEmpty(Documents.Realm.ClientId, filters.ClientId),
             FilterDefinitions.MatchIfNotEmpty(Documents.Realm.Id, filters.Id),
             FilterDefinitions.MatchBool(Documents.Realm.IsDeleted, filters.IsDeleted)
         };
