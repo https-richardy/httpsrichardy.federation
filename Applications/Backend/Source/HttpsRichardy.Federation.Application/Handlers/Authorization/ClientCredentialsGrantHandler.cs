@@ -1,30 +1,30 @@
 ﻿namespace HttpsRichardy.Federation.Application.Handlers.Authorization;
 
-public sealed class ClientCredentialsGrantHandler(IRealmCollection realmCollection, ISecurityTokenService tokenService) :
+public sealed class ClientCredentialsGrantHandler(IClientCollection clientCollection, ISecurityTokenService tokenService) :
     IAuthorizationFlowHandler
 {
     public Grant Grant => Grant.ClientCredentials;
 
     public async Task<Result<ClientAuthenticationResult>> HandleAsync(ClientAuthenticationCredentials parameters, CancellationToken cancellation = default)
     {
-        var filters = new RealmFiltersBuilder()
-            .WithClientId(parameters.ClientId)
+        var filters = ClientFilters.WithSpecifications()
+            .WithName(parameters.ClientId)
             .Build();
 
-        var realms = await realmCollection.GetRealmsAsync(filters, cancellation: cancellation);
-        var realm = realms.FirstOrDefault();
+        var clients = await clientCollection.GetClientsAsync(filters, cancellation: cancellation);
+        var client = clients.FirstOrDefault();
 
-        if (realm is null)
+        if (client is null)
         {
             return Result<ClientAuthenticationResult>.Failure(AuthenticationErrors.ClientNotFound);
         }
 
-        if (parameters.ClientSecret != realm.SecretHash)
+        if (parameters.ClientSecret != client.Secret)
         {
             return Result<ClientAuthenticationResult>.Failure(AuthenticationErrors.InvalidClientCredentials);
         }
 
-        var tokenResult = await tokenService.GenerateAccessTokenAsync(realm, cancellation);
+        var tokenResult = await tokenService.GenerateAccessTokenAsync(client, cancellation);
         if (tokenResult.IsFailure)
         {
             return Result<ClientAuthenticationResult>.Failure(tokenResult.Error);
