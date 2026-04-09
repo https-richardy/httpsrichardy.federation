@@ -38,6 +38,7 @@ public static class Documents
     {
         public const string Name = nameof(Domain.Aggregates.Client.Name);
         public const string RealmId = nameof(Domain.Aggregates.Client.RealmId);
+        public const string ClientId = nameof(Domain.Aggregates.Client.ClientId);
         public const string IsDeleted = nameof(Domain.Aggregates.Client.IsDeleted);
         public const string Id = "_id";
     }
