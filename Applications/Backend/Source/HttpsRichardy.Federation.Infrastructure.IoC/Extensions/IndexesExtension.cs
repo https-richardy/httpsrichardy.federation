@@ -58,7 +58,11 @@ public static class IndexesExtension
 
         var clientIndexes = new[]
         {
-            new CreateIndexModel<Client>(Builders<Client>.IndexKeys.Ascending(client => client.RealmId))
+            new CreateIndexModel<Client>(Builders<Client>.IndexKeys.Ascending(client => client.RealmId)),
+            new CreateIndexModel<Client>(Builders<Client>.IndexKeys.Ascending(client => client.ClientId)),
+            new CreateIndexModel<Client>(Builders<Client>.IndexKeys
+                .Ascending(client => client.RealmId)
+                .Ascending(client => client.ClientId))
         };
 
         userCollection.Indexes.CreateMany(userIndexes);
