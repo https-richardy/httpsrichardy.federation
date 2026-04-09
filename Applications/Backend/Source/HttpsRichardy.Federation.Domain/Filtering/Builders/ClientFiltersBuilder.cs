@@ -10,10 +10,10 @@ public sealed class ClientFiltersBuilder : FiltersBuilderBase<ClientFilters, Cli
         return this;
     }
 
-    public ClientFiltersBuilder WithRealmId(string? realmId)
+    public ClientFiltersBuilder WithClientId(string? clientId)
     {
-        if (!string.IsNullOrWhiteSpace(realmId))
-            _filters.RealmId = realmId.Trim().Normalize(NormalizationForm.FormC);
+        if (!string.IsNullOrWhiteSpace(clientId))
+            _filters.ClientId = clientId.Trim().Normalize(NormalizationForm.FormC);
 
         return this;
     }
