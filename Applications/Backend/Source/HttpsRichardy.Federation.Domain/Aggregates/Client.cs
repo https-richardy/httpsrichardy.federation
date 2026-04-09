@@ -4,7 +4,9 @@ public sealed class Client : Aggregate
 {
     public string Name { get; set; } = default!;
     public string Secret { get; set; } = default!;
+
     public string RealmId { get; set; } = default!;
+    public string ClientId { get; set; } = default!;
 
     public ICollection<Grant> Flows { get; set; } = [];
     public ICollection<RedirectUri> RedirectUris { get; set; } = [];
