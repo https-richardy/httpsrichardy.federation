@@ -9,6 +9,7 @@ public static class ClientFiltersStage
         var definitions = new List<FilterDefinition<BsonDocument>>
         {
             FilterDefinitions.MatchIfNotEmpty(Documents.Client.Name, filters.Name),
+            FilterDefinitions.MatchIfNotEmpty(Documents.Client.ClientId, filters.ClientId),
             FilterDefinitions.MatchIfNotEmpty(Documents.Client.RealmId, realm?.Id),
             FilterDefinitions.MatchBool(Documents.Client.IsDeleted, filters.IsDeleted)
         };
