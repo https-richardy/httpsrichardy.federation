@@ -8,6 +8,7 @@ public static class ClientFiltersStage
         var realm = realmProvider.GetCurrentRealm();
         var definitions = new List<FilterDefinition<BsonDocument>>
         {
+            FilterDefinitions.MatchIfNotEmpty(Documents.Client.Id, filters.Id),
             FilterDefinitions.MatchIfNotEmpty(Documents.Client.Name, filters.Name),
             FilterDefinitions.MatchIfNotEmpty(Documents.Client.ClientId, filters.ClientId),
             FilterDefinitions.MatchIfNotEmpty(Documents.Client.RealmId, realm?.Id),
@@ -17,3 +18,4 @@ public static class ClientFiltersStage
         return pipeline.Match(Builders<BsonDocument>.Filter.And(definitions));
     }
 }
+
