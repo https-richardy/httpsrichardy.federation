@@ -12,6 +12,15 @@ public static class ClientMapper
         RedirectUris = [.. client.RedirectUris.Select(uri => new RedirectUri(uri))]
     };
 
+    public static Client AsClient(ClientUpdateScheme payload, Client client)
+    {
+        client.Name = payload.Name;
+        client.Flows = [.. payload.Flows];
+        client.RedirectUris = [.. payload.RedirectUris.Select(uri => new RedirectUri(uri))];
+
+        return client;
+    }
+
     public static ClientScheme AsResponse(this Client client) => new()
     {
         Id = client.Id,
