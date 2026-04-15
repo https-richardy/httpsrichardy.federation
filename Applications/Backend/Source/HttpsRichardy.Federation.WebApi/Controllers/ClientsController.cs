@@ -39,6 +39,23 @@ public sealed class ClientsController(IDispatcher dispatcher) : ControllerBase
         };
     }
 
+    [HttpPut("{id}")]
+    [Stability(Stability.Stable)]
+    [Authorize(Roles = Permissions.EditClient)]
+    public async Task<IActionResult> UpdateClientAsync([FromRoute] string id, [FromBody] ClientUpdateScheme request, CancellationToken cancellation)
+    {
+        var result = await dispatcher.DispatchAsync(request with { Id = id }, cancellation);
+
+        return result switch
+        {
+            { IsSuccess: true } when result.Data is not null =>
+                StatusCode(StatusCodes.Status200OK, result.Data),
+
+            { IsFailure: true } when result.Error == ClientErrors.ClientDoesNotExist =>
+                StatusCode(StatusCodes.Status404NotFound, result.Error),
+        };
+    }
+
     [HttpGet("{id}/permissions")]
     [Stability(Stability.Stable)]
     [Authorize(Roles = Permissions.ViewPermissions)]
@@ -48,6 +65,7 @@ public sealed class ClientsController(IDispatcher dispatcher) : ControllerBase
 
         return result switch
         {
+
             { IsSuccess: true } when result.Data is not null =>
                 StatusCode(StatusCodes.Status200OK, result.Data),
 
