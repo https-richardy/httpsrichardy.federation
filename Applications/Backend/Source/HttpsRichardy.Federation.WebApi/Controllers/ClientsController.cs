@@ -38,4 +38,21 @@ public sealed class ClientsController(IDispatcher dispatcher) : ControllerBase
             { IsSuccess: true } => StatusCode(StatusCodes.Status201Created)
         };
     }
+
+    [HttpGet("{id}/permissions")]
+    [Stability(Stability.Stable)]
+    [Authorize(Roles = Permissions.ViewPermissions)]
+    public async Task<IActionResult> GetClientPermissionsAsync([FromRoute] string id, [FromQuery] ListClientAssignedPermissionsParameters request, CancellationToken cancellation)
+    {
+        var result = await dispatcher.DispatchAsync(request with { Id = id }, cancellation);
+
+        return result switch
+        {
+            { IsSuccess: true } when result.Data is not null =>
+                StatusCode(StatusCodes.Status200OK, result.Data),
+
+            { IsFailure: true } when result.Error == ClientErrors.ClientDoesNotExist =>
+                StatusCode(StatusCodes.Status404NotFound, result.Error),
+        };
+    }
 }
