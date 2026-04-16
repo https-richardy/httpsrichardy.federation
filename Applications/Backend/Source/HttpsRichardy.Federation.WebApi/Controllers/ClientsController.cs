@@ -57,6 +57,9 @@ public sealed class ClientsController(IDispatcher dispatcher) : ControllerBase
 
             { IsFailure: true } when result.Error == ClientErrors.ClientDoesNotExist =>
                 StatusCode(StatusCodes.Status404NotFound, result.Error),
+
+            { IsFailure: true } when result.Error == ClientErrors.ClientAlreadyExists =>
+                StatusCode(StatusCodes.Status409Conflict, result.Error),
         };
     }
 
