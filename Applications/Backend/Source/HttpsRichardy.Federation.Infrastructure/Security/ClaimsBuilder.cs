@@ -23,12 +23,6 @@ public sealed class ClaimsBuilder
         return this;
     }
 
-    public ClaimsBuilder WithRealmId(string realmId)
-    {
-        _claims.Add(new Claim(IdentityClaimNames.RealmId, realmId));
-        return this;
-    }
-
     public ClaimsBuilder WithRealmName(string realmName)
     {
         _claims.Add(new Claim(IdentityClaimNames.Realm, realmName));

@@ -68,9 +68,11 @@ public sealed class JwtSecurityTokenService(
     public async Task<Result<SecurityToken>> GenerateAccessTokenAsync(Client client, CancellationToken cancellation = default)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
+        var realm = realmProvider.GetCurrentRealm();
+
         var claims = new ClaimsBuilder()
-            .WithRealmId(client.RealmId)
-            .WithRealmName(client.Name)
+            .WithRealmName(realm.Name)
+            .WithClientId(client.Id)
             .WithPermissions(client.Permissions)
             .Build();
 
