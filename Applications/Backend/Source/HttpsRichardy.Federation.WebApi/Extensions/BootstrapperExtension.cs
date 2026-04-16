@@ -17,10 +17,10 @@ public static class BootstrapperExtension
         var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
         var settings = scope.ServiceProvider.GetRequiredService<ISettings>();
 
-        var clientCredentials = await credentialsGenerator.GenerateAsync("root", cancellation: default);
+        var clientCredentials = await credentialsGenerator.GenerateAsync("admin", cancellation: default);
 
         var defaultRealm = new Realm { Name = "master" };
-        var defaultClient = new Client { Name = "root", Flows = [Grant.ClientCredentials] };
+        var defaultClient = new Client { Name = "admin", Flows = [Grant.ClientCredentials] };
 
         var realmFilters = RealmFilters.WithSpecifications()
             .WithName("master")
@@ -41,7 +41,7 @@ public static class BootstrapperExtension
             RealmId = defaultRealm.Id
         })];
 
-        defaultClient.Secret = await passwordHasher.HashPasswordAsync(clientCredentials.ClientId + defaultRealm.Name);
+        defaultClient.Secret = await passwordHasher.HashPasswordAsync(clientCredentials.ClientId + defaultClient.Name);
         defaultClient.Permissions = [.. defaultRealm.Permissions];
 
         defaultRealm.Clients = [defaultClient];
