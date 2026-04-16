@@ -96,4 +96,28 @@ public sealed class ClientsController(IDispatcher dispatcher) : ControllerBase
                 StatusCode(StatusCodes.Status409Conflict, result.Error),
         };
     }
+
+    [HttpDelete("{id}/permissions/{permissionId}")]
+    [Stability(Stability.Stable)]
+    [Authorize(Roles = Permissions.RevokePermissions)]
+    public async Task<IActionResult> RevokePermissionAsync([FromRoute] string id, [FromRoute] string permissionId, CancellationToken cancellation)
+    {
+        var request = new RevokeClientPermissionScheme { Id = id, PermissionId = permissionId };
+        var result = await dispatcher.DispatchAsync(request, cancellation);
+
+        return result switch
+        {
+            { IsSuccess: true } =>
+                StatusCode(StatusCodes.Status204NoContent),
+
+            { IsFailure: true } when result.Error == ClientErrors.ClientDoesNotExist =>
+                StatusCode(StatusCodes.Status404NotFound, result.Error),
+
+            { IsFailure: true } when result.Error == PermissionErrors.PermissionDoesNotExist =>
+                StatusCode(StatusCodes.Status404NotFound, result.Error),
+
+            { IsFailure: true } when result.Error == ClientErrors.PermissionNotAssigned =>
+                StatusCode(StatusCodes.Status409Conflict, result.Error)
+        };
+    }
 }
