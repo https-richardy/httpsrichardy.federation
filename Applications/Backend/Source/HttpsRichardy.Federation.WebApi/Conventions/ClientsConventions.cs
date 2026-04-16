@@ -10,6 +10,7 @@ public static class ClientsConventions
 
     [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Prefix)]
     [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(Error), StatusCodes.Status409Conflict)]
     public static void CreateClientAsync(ClientCreationScheme request, CancellationToken cancellation) { }
 
     [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Prefix)]
