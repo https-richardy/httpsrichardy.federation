@@ -21,4 +21,10 @@ public static class ClientsConventions
     [ProducesResponseType(typeof(IReadOnlyCollection<PermissionDetailsScheme>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Error), StatusCodes.Status404NotFound)]
     public static void GetClientPermissionsAsync(string id, ListClientAssignedPermissionsParameters request, CancellationToken cancellation) { }
+
+    [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Prefix)]
+    [ProducesResponseType(typeof(IReadOnlyCollection<PermissionDetailsScheme>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Error), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(Error), StatusCodes.Status409Conflict)]
+    public static void AssignPermissionAsync(string id, AssignClientPermissionScheme request, CancellationToken cancellation) { }
 }

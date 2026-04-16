@@ -73,4 +73,27 @@ public sealed class ClientsController(IDispatcher dispatcher) : ControllerBase
                 StatusCode(StatusCodes.Status404NotFound, result.Error),
         };
     }
+
+    [HttpPost("{id}/permissions")]
+    [Stability(Stability.Stable)]
+    [Authorize(Roles = Permissions.AssignPermissions)]
+    public async Task<IActionResult> AssignPermissionAsync([FromRoute] string id, [FromBody] AssignClientPermissionScheme request, CancellationToken cancellation)
+    {
+        var result = await dispatcher.DispatchAsync(request with { Id = id }, cancellation);
+
+        return result switch
+        {
+            { IsSuccess: true } when result.Data is not null =>
+                StatusCode(StatusCodes.Status200OK, result.Data),
+
+            { IsFailure: true } when result.Error == ClientErrors.ClientDoesNotExist =>
+                StatusCode(StatusCodes.Status404NotFound, result.Error),
+
+            { IsFailure: true } when result.Error == PermissionErrors.PermissionDoesNotExist =>
+                StatusCode(StatusCodes.Status404NotFound, result.Error),
+
+            { IsFailure: true } when result.Error == ClientErrors.ClientAlreadyHasPermission =>
+                StatusCode(StatusCodes.Status409Conflict, result.Error),
+        };
+    }
 }
