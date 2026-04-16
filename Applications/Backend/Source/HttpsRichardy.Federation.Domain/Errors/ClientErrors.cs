@@ -7,6 +7,11 @@ public static class ClientErrors
         Description: "The client already has the specified permission assigned."
     );
 
+    public static readonly Error PermissionNotAssigned = new(
+        Code: "#ERROR-C2FB0",
+        Description: "The client does not have the specified permission assigned."
+    );
+
     public static readonly Error ClientDoesNotExist = new(
         Code: "#ERROR-2D943",
         Description: "The client with the specified ID does not exist."
