@@ -27,6 +27,12 @@ dotnet_diagnostic.CS8601.severity = error
 dotnet_diagnostic.CS8602.severity = error
 dotnet_diagnostic.CS8603.severity = error
 dotnet_diagnostic.CS8604.severity = error
+dotnet_diagnostic.SA1516.severity = error
+
+dotnet_style_allow_multiple_blank_lines_experimental = false:error
+dotnet_style_prefer_auto_properties = true:error
+dotnet_style_object_initializer = true:error
+dotnet_style_collection_initializer = true:error
 
 [*.json]
 indent_style = space
