@@ -18,6 +18,18 @@ public sealed class ClientUpdateHandler(IClientCollection collection) :
             return Result<ClientScheme>.Failure(ClientErrors.ClientDoesNotExist);
         }
 
+        var nameFilter = ClientFilters.WithSpecifications()
+            .WithName(parameters.Name)
+            .Build();
+
+        var clientsWithSameName = await collection.GetClientsAsync(nameFilter, cancellation: cancellation);
+        var existingClient = clientsWithSameName.FirstOrDefault(existing => existing.Id != parameters.Id);
+
+        if (existingClient is not null)
+        {
+            return Result<ClientScheme>.Failure(ClientErrors.ClientAlreadyExists);
+        }
+
         client = ClientMapper.AsClient(parameters, client);
 
         var updatedClient = await collection.UpdateAsync(client, cancellation: cancellation);
