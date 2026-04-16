@@ -56,6 +56,23 @@ public sealed class ClientsController(IDispatcher dispatcher) : ControllerBase
         };
     }
 
+    [HttpDelete("{id}")]
+    [Stability(Stability.Stable)]
+    [Authorize(Roles = Permissions.DeleteClient)]
+    public async Task<IActionResult> DeleteClientAsync([FromRoute] string id, [FromQuery] ClientDeletionScheme request, CancellationToken cancellation)
+    {
+        var result = await dispatcher.DispatchAsync(request with { Id = id }, cancellation);
+
+        return result switch
+        {
+            { IsSuccess: true } =>
+                StatusCode(StatusCodes.Status204NoContent),
+
+            { IsFailure: true } when result.Error == ClientErrors.ClientDoesNotExist =>
+                StatusCode(StatusCodes.Status404NotFound, result.Error),
+        };
+    }
+
     [HttpGet("{id}/permissions")]
     [Stability(Stability.Stable)]
     [Authorize(Roles = Permissions.ViewPermissions)]

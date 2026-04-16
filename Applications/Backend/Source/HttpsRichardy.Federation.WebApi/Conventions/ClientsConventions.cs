@@ -18,6 +18,11 @@ public static class ClientsConventions
     public static void UpdateClientAsync(string id, ClientUpdateScheme request, CancellationToken cancellation) { }
 
     [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Prefix)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(Error), StatusCodes.Status404NotFound)]
+    public static void DeleteClientAsync(string id, CancellationToken cancellation) { }
+
+    [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Prefix)]
     [ProducesResponseType(typeof(IReadOnlyCollection<PermissionDetailsScheme>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Error), StatusCodes.Status404NotFound)]
     public static void GetClientPermissionsAsync(string id, ListClientAssignedPermissionsParameters request, CancellationToken cancellation) { }
