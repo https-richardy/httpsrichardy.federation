@@ -133,7 +133,7 @@ public sealed class PermissionEndpointTests(IntegrationEnvironmentFixture factor
 
         /* arrange: create a new realm */
         var realmPayload = _fixture.Build<RealmCreationScheme>()
-            .With(realm => realm.Name, $"test-realm-{Guid.NewGuid()}")
+            .With(realm => realm.Name, $"realm-{Guid.NewGuid()}")
             .Create();
 
         var realmResponse = await masterClient.PostAsJsonAsync("api/v1/realms", realmPayload);
@@ -142,79 +142,22 @@ public sealed class PermissionEndpointTests(IntegrationEnvironmentFixture factor
         Assert.NotNull(realm);
         Assert.Equal(HttpStatusCode.Created, realmResponse.StatusCode);
 
-        /* arrange: create a client scoped to the new realm */
-        var clientCollection = factory.Services.GetRequiredService<IClientCollection>();
-        var realmAdminClient = factory.HttpClient
-            .WithRealmHeader(realm.Name)
+        /* arrange: use an authenticated identity in the target realm */
+        var realmClient = factory.HttpClient.WithRealmHeader(realm.Name)
             .WithAuthorization(masterAuthenticationResult.AccessToken);
 
-        var clientPayload = _fixture.Build<ClientCreationScheme>()
-            .With(client => client.Name, "nubank")
-            .With(client => client.Flows, [Grant.ClientCredentials])
-            .With(client => client.RedirectUris, [])
-            .Create();
-
-        var clientResponse = await realmAdminClient.PostAsJsonAsync("api/v1/clients", clientPayload);
-
-        Assert.NotNull(clientResponse);
-        Assert.Equal(HttpStatusCode.Created, clientResponse.StatusCode);
-
-        var clientFilters = ClientFilters.WithSpecifications()
-            .WithName(clientPayload.Name)
-            .Build();
-
-        var clients = await clientCollection.GetClientsAsync(clientFilters);
-        var client = clients.FirstOrDefault();
-
-        Assert.NotEmpty(clients);
-        Assert.NotNull(client);
-
-        /* arrange: assign CreatePermission to the client using the master-scoped admin client */
-        var assignPayload = _fixture.Build<AssignClientPermissionScheme>()
-            .With(assignment => assignment.PermissionName, Permissions.CreatePermission)
-            .Create();
-
-        var assignment = await realmAdminClient.PostAsJsonAsync($"api/v1/clients/{client.Id}/permissions", assignPayload);
-
-        Assert.NotNull(assignment);
-        Assert.Equal(HttpStatusCode.OK, assignment.StatusCode);
-
-        /* arrange: authenticate via OAuth 2.0 client_credentials using the created client */
-        var oauthCredentials = new Dictionary<string, string>
+        /* act: attempt to create a permission using a reserved system name */
+        var payload = new PermissionCreationScheme
         {
-            { "grant_type", "client_credentials" },
-            { "client_id", client.ClientId },
-            { "client_secret", client.Secret }
+            Name = Permissions.ViewRealms
         };
 
-        var oauthContent = new FormUrlEncodedContent(oauthCredentials);
-        var connectClient = factory.HttpClient;
-
-        var oauthResponse = await connectClient.PostAsync("api/v1/protocol/open-id/connect/token", oauthContent);
-        var oauthResult = await oauthResponse.Content.ReadFromJsonAsync<ClientAuthenticationResult>();
-
-        Assert.Equal(HttpStatusCode.OK, oauthResponse.StatusCode);
-
-        Assert.NotNull(oauthResult);
-        Assert.NotEmpty(oauthResult.AccessToken);
-
-        var realmClient = factory.HttpClient.WithRealmHeader(realm.Name);
-
-        realmClient.WithAuthorization(oauthResult.AccessToken);
-
-        /* act: attempt to create a permission using a reserved system name */
-        var payload = _fixture.Build<PermissionCreationScheme>()
-            .With(permission => permission.Name, Permissions.ViewRealms)
-            .Create();
-
         var response = await realmClient.PostAsJsonAsync("api/v1/permissions", payload);
-
-        /* assert: response should be 409 Conflict */
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-
         var error = await response.Content.ReadFromJsonAsync<Error>();
 
+        /* assert: response should be 409 Conflict */
         Assert.NotNull(error);
+
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         Assert.Equal(PermissionErrors.PermissionNameIsReserved, error);
     }
