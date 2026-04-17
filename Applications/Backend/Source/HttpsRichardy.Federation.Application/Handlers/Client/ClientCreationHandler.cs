@@ -1,9 +1,9 @@
 namespace HttpsRichardy.Federation.Application.Handlers.Client;
 
 public sealed class ClientCreationHandler(IClientCredentialsGenerator credentialsGenerator, IRealmProvider realmProvider, IClientCollection clientCollection) :
-    IDispatchHandler<ClientCreationScheme, Result>
+    IDispatchHandler<ClientCreationScheme, Result<ClientScheme>>
 {
-    public async Task<Result> HandleAsync(ClientCreationScheme parameters, CancellationToken cancellation = default)
+    public async Task<Result<ClientScheme>> HandleAsync(ClientCreationScheme parameters, CancellationToken cancellation = default)
     {
         var filters = ClientFilters.WithSpecifications()
             .WithName(parameters.Name)
@@ -14,7 +14,7 @@ public sealed class ClientCreationHandler(IClientCredentialsGenerator credential
 
         if (existingClient is not null)
         {
-            return Result.Failure(ClientErrors.ClientAlreadyExists);
+            return Result<ClientScheme>.Failure(ClientErrors.ClientAlreadyExists);
         }
 
         var realm = realmProvider.GetCurrentRealm();
@@ -24,6 +24,6 @@ public sealed class ClientCreationHandler(IClientCredentialsGenerator credential
 
         await clientCollection.InsertAsync(client, cancellation: cancellation);
 
-        return Result.Success();
+        return Result<ClientScheme>.Success(client.AsResponse());
     }
 }

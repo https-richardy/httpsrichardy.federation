@@ -1,6 +1,6 @@
 namespace HttpsRichardy.Federation.Application.Payloads.Client;
 
-public sealed record ClientCreationScheme : IDispatchable<Result>
+public sealed record ClientCreationScheme : IDispatchable<Result<ClientScheme>>
 {
     public string Name { get; init; } = default!;
 
