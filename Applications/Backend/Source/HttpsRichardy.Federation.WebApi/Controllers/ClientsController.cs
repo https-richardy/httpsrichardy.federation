@@ -35,8 +35,8 @@ public sealed class ClientsController(IDispatcher dispatcher) : ControllerBase
 
         return result switch
         {
-            { IsSuccess: true } =>
-                StatusCode(StatusCodes.Status201Created),
+            { IsSuccess: true } when result.Data is not null =>
+                StatusCode(StatusCodes.Status201Created, result.Data),
 
             { IsFailure: true } when result.Error == ClientErrors.ClientAlreadyExists =>
                 StatusCode(StatusCodes.Status409Conflict, result.Error),
