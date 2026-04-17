@@ -162,9 +162,9 @@ public sealed class ClientEndpointTests(IntegrationEnvironmentFixture factory) :
 
         /* arrange: prepare request to update client */
         var payload = _fixture.Build<ClientUpdateScheme>()
-            .With(update => update.Name, $"updated-client-{Guid.NewGuid()}")
-            .With(update => update.Flows, [Grant.AuthorizationCode])
-            .With(update => update.RedirectUris, ["https://localhost/callback"])
+            .With(client => client.Name, $"updated-client-{Guid.NewGuid()}")
+            .With(client => client.Flows, [Grant.AuthorizationCode])
+            .With(client => client.RedirectUris, ["https://localhost/callback"])
             .Create();
 
         /* act: send PUT request to update client */
