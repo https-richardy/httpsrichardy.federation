@@ -508,4 +508,256 @@ public sealed class ClientEndpointTests(IntegrationEnvironmentFixture factory) :
         Assert.Equal(HttpStatusCode.Conflict, secondResponse.StatusCode);
         Assert.Equal(ClientErrors.ClientAlreadyHasPermission, error);
     }
+
+    [Fact(DisplayName = "[e2e] - when DELETE /clients/{id}/permissions/{permissionId} should revoke permission successfully")]
+    public async Task WhenDeleteClientPermission_ShouldRevokePermissionSuccessfully()
+    {
+        /* arrange: resolve required dependencies */
+        var clientCollection = factory.Services.GetRequiredService<IClientCollection>();
+        var permissionCollection = factory.Services.GetRequiredService<IPermissionCollection>();
+
+        /* arrange: authenticate user and get access token */
+        var httpClient = factory.HttpClient.WithRealmHeader("master");
+        var credentials = new AuthenticationCredentials
+        {
+            Username = "federation.testing.user",
+            Password = "federation.testing.password"
+        };
+
+        var authenticationResponse = await httpClient.PostAsJsonAsync("api/v1/identity/authenticate", credentials);
+        var authenticationResult = await authenticationResponse.Content.ReadFromJsonAsync<AuthenticationResult>();
+
+        Assert.NotNull(authenticationResult);
+        Assert.NotEmpty(authenticationResult.AccessToken);
+
+        httpClient.WithAuthorization(authenticationResult.AccessToken);
+
+        /* arrange: create a new client */
+        var clientPayload = _fixture.Build<ClientCreationScheme>()
+            .With(client => client.Name, $"test-client-{Guid.NewGuid()}")
+            .With(client => client.Flows, [Grant.ClientCredentials])
+            .With(client => client.RedirectUris, [])
+            .Create();
+
+        var clientResponse = await httpClient.PostAsJsonAsync("api/v1/clients", clientPayload);
+
+        Assert.Equal(HttpStatusCode.Created, clientResponse.StatusCode);
+
+        var clientFilters = ClientFilters.WithSpecifications()
+            .WithName(clientPayload.Name)
+            .Build();
+
+        var clients = await clientCollection.GetClientsAsync(clientFilters, CancellationToken.None);
+        var client = clients.FirstOrDefault();
+
+        Assert.NotEmpty(clients);
+        Assert.NotNull(client);
+
+        /* arrange: create a new permission */
+        var permissionPayload = _fixture.Build<PermissionCreationScheme>()
+            .With(permission => permission.Name, $"test.permission.{Guid.NewGuid()}")
+            .Create();
+
+        var permissionResponse = await httpClient.PostAsJsonAsync("api/v1/permissions", permissionPayload);
+
+        Assert.Equal(HttpStatusCode.Created, permissionResponse.StatusCode);
+
+        var permissionFilters = PermissionFilters.WithSpecifications()
+            .WithName(permissionPayload.Name)
+            .Build();
+
+        var permissions = await permissionCollection.GetPermissionsAsync(permissionFilters, CancellationToken.None);
+        var permission = permissions.FirstOrDefault();
+
+        Assert.NotEmpty(permissions);
+        Assert.NotNull(permission);
+
+        /* arrange: assign permission to client */
+        var assignPayload = _fixture.Build<AssignClientPermissionScheme>()
+            .With(assignment => assignment.PermissionName, permission.Name)
+            .Create();
+
+        var assignResponse = await httpClient.PostAsJsonAsync($"api/v1/clients/{client.Id}/permissions", assignPayload);
+
+        Assert.Equal(HttpStatusCode.OK, assignResponse.StatusCode);
+
+        /* act: send DELETE request to revoke permission from client */
+        var response = await httpClient.DeleteAsync($"api/v1/clients/{client.Id}/permissions/{permission.Id}");
+
+        /* assert: response should be 204 No Content */
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+
+        /* assert: verify permission is no longer in client's permissions list */
+        var httpResponse = await httpClient.GetAsync($"api/v1/clients/{client.Id}/permissions");
+        var assignedPermissions = await httpResponse.Content.ReadFromJsonAsync<IReadOnlyCollection<PermissionDetailsScheme>>();
+
+        Assert.Equal(HttpStatusCode.OK, httpResponse.StatusCode);
+
+        Assert.NotNull(assignedPermissions);
+        Assert.DoesNotContain(assignedPermissions, current => current.Id == permission.Id);
+    }
+
+    [Fact(DisplayName = "[e2e] - when DELETE /clients/{id}/permissions/{permissionId} with non-existent client should return 404 #ERROR-2D943")]
+    public async Task WhenDeleteClientPermissionWithNonExistentClient_ShouldReturnNotFound()
+    {
+        /* arrange: authenticate user and get access token */
+        var httpClient = factory.HttpClient.WithRealmHeader("master");
+        var credentials = new AuthenticationCredentials
+        {
+            Username = "federation.testing.user",
+            Password = "federation.testing.password"
+        };
+
+        var authenticationResponse = await httpClient.PostAsJsonAsync("api/v1/identity/authenticate", credentials);
+        var authenticationResult = await authenticationResponse.Content.ReadFromJsonAsync<AuthenticationResult>();
+
+        Assert.NotNull(authenticationResult);
+        Assert.NotEmpty(authenticationResult.AccessToken);
+
+        httpClient.WithAuthorization(authenticationResult.AccessToken);
+
+        /* arrange: prepare request with a non-existent client ID */
+        var nonExistentClientId = Guid.NewGuid().ToString();
+        var nonExistentPermissionId = Guid.NewGuid().ToString();
+
+        /* act: send DELETE request for non-existent client */
+        var response = await httpClient.DeleteAsync($"api/v1/clients/{nonExistentClientId}/permissions/{nonExistentPermissionId}");
+        var error = await response.Content.ReadFromJsonAsync<Error>();
+
+        /* assert: response should be 404 Not Found */
+        Assert.NotNull(error);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal(ClientErrors.ClientDoesNotExist, error);
+    }
+
+    [Fact(DisplayName = "[e2e] - when DELETE /clients/{id}/permissions/{permissionId} with non-existent permission should return 404 #ERROR-93697")]
+    public async Task WhenDeleteClientPermissionWithNonExistentPermission_ShouldReturnNotFound()
+    {
+        /* arrange: resolve required dependencies */
+        var clientCollection = factory.Services.GetRequiredService<IClientCollection>();
+
+        /* arrange: authenticate user and get access token */
+        var httpClient = factory.HttpClient.WithRealmHeader("master");
+        var credentials = new AuthenticationCredentials
+        {
+            Username = "federation.testing.user",
+            Password = "federation.testing.password"
+        };
+
+        var authenticationResponse = await httpClient.PostAsJsonAsync("api/v1/identity/authenticate", credentials);
+        var authenticationResult = await authenticationResponse.Content.ReadFromJsonAsync<AuthenticationResult>();
+
+        Assert.NotNull(authenticationResult);
+        Assert.NotEmpty(authenticationResult.AccessToken);
+
+        httpClient.WithAuthorization(authenticationResult.AccessToken);
+
+        /* arrange: create a new client */
+        var clientPayload = _fixture.Build<ClientCreationScheme>()
+            .With(client => client.Name, $"test-client-{Guid.NewGuid()}")
+            .With(client => client.Flows, [Grant.ClientCredentials])
+            .With(client => client.RedirectUris, [])
+            .Create();
+
+        var clientResponse = await httpClient.PostAsJsonAsync("api/v1/clients", clientPayload);
+
+        Assert.Equal(HttpStatusCode.Created, clientResponse.StatusCode);
+
+        var clientFilters = ClientFilters.WithSpecifications()
+            .WithName(clientPayload.Name)
+            .Build();
+
+        var clients = await clientCollection.GetClientsAsync(clientFilters, CancellationToken.None);
+        var client = clients.FirstOrDefault();
+
+        Assert.NotEmpty(clients);
+        Assert.NotNull(client);
+
+        /* arrange: prepare request with a non-existent permission ID */
+        var nonExistentPermissionId = Guid.NewGuid().ToString();
+
+        /* act: send DELETE request with non-existent permission */
+        var response = await httpClient.DeleteAsync($"api/v1/clients/{client.Id}/permissions/{nonExistentPermissionId}");
+        var error = await response.Content.ReadFromJsonAsync<Error>();
+
+        /* assert: response should be 404 Not Found */
+        Assert.NotNull(error);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal(PermissionErrors.PermissionDoesNotExist, error);
+    }
+
+    [Fact(DisplayName = "[e2e] - when DELETE /clients/{id}/permissions/{permissionId} with permission not assigned should return 409 #ERROR-C2FB0")]
+    public async Task WhenDeleteClientPermissionWithPermissionNotAssigned_ShouldReturnConflict()
+    {
+        /* arrange: resolve required dependencies */
+        var clientCollection = factory.Services.GetRequiredService<IClientCollection>();
+        var permissionCollection = factory.Services.GetRequiredService<IPermissionCollection>();
+
+        /* arrange: authenticate user and get access token */
+        var httpClient = factory.HttpClient.WithRealmHeader("master");
+        var credentials = new AuthenticationCredentials
+        {
+            Username = "federation.testing.user",
+            Password = "federation.testing.password"
+        };
+
+        var authenticationResponse = await httpClient.PostAsJsonAsync("api/v1/identity/authenticate", credentials);
+        var authenticationResult = await authenticationResponse.Content.ReadFromJsonAsync<AuthenticationResult>();
+
+        Assert.NotNull(authenticationResult);
+        Assert.NotEmpty(authenticationResult.AccessToken);
+
+        httpClient.WithAuthorization(authenticationResult.AccessToken);
+
+        /* arrange: create a new client */
+        var clientPayload = _fixture.Build<ClientCreationScheme>()
+            .With(client => client.Name, $"test-client-{Guid.NewGuid()}")
+            .With(client => client.Flows, [Grant.ClientCredentials])
+            .With(client => client.RedirectUris, [])
+            .Create();
+
+        var clientResponse = await httpClient.PostAsJsonAsync("api/v1/clients", clientPayload);
+
+        Assert.Equal(HttpStatusCode.Created, clientResponse.StatusCode);
+
+        var clientFilters = ClientFilters.WithSpecifications()
+            .WithName(clientPayload.Name)
+            .Build();
+
+        var clients = await clientCollection.GetClientsAsync(clientFilters, CancellationToken.None);
+        var client = clients.FirstOrDefault();
+
+        Assert.NotEmpty(clients);
+        Assert.NotNull(client);
+
+        /* arrange: create a new permission without assigning it to the client */
+        var permissionPayload = _fixture.Build<PermissionCreationScheme>()
+            .With(permission => permission.Name, $"test.permission.{Guid.NewGuid()}")
+            .Create();
+
+        var permissionResponse = await httpClient.PostAsJsonAsync("api/v1/permissions", permissionPayload);
+        var permissionFilters = PermissionFilters.WithSpecifications()
+            .WithName(permissionPayload.Name)
+            .Build();
+
+        Assert.Equal(HttpStatusCode.Created, permissionResponse.StatusCode);
+
+        var permissions = await permissionCollection.GetPermissionsAsync(permissionFilters, CancellationToken.None);
+        var permission = permissions.FirstOrDefault();
+
+        Assert.NotEmpty(permissions);
+        Assert.NotNull(permission);
+
+        /* act: send DELETE request for permission not assigned to client */
+        var response = await httpClient.DeleteAsync($"api/v1/clients/{client.Id}/permissions/{permission.Id}");
+        var error = await response.Content.ReadFromJsonAsync<Error>();
+
+        /* assert: response should be 409 Conflict */
+        Assert.NotNull(error);
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        Assert.Equal(ClientErrors.PermissionNotAssigned, error);
+    }
 }
