@@ -9,11 +9,4 @@ public sealed class RealmFiltersBuilder :
 
         return this;
     }
-
-    public RealmFiltersBuilder WithClientId(string? clientId)
-    {
-        _filters.ClientId = clientId;
-
-        return this;
-    }
 }

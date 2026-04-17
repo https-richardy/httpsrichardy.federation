@@ -28,7 +28,6 @@ public static class RealmMapper
     public static RealmFilters AsFilters(RealmFetchParameters parameters) => new()
     {
         Id = parameters.Id,
-        ClientId = parameters.ClientId,
         Name = parameters.Name,
         Pagination = parameters.Pagination,
         Sort = parameters.Sort,
