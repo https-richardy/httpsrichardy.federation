@@ -193,4 +193,54 @@ public sealed class ClientEndpointTests(IntegrationEnvironmentFixture factory) :
 
         Assert.Contains(persistedClient.RedirectUris, uri => uri.Address == "https://localhost/callback");
     }
+
+    [Fact(DisplayName = "[e2e] - when DELETE /clients/{id} with valid client should delete client successfully")]
+    public async Task WhenDeleteClientsWithValidClient_ShouldDeleteClientSuccessfully()
+    {
+        /* arrange: resolve required dependencies */
+        var clientCollection = factory.Services.GetRequiredService<IClientCollection>();
+
+        /* arrange: authenticate user and get access token */
+        var httpClient = factory.HttpClient.WithRealmHeader("master");
+        var credentials = new AuthenticationCredentials
+        {
+            Username = "federation.testing.user",
+            Password = "federation.testing.password"
+        };
+
+        var authenticationResponse = await httpClient.PostAsJsonAsync("api/v1/identity/authenticate", credentials);
+        var authenticationResult = await authenticationResponse.Content.ReadFromJsonAsync<AuthenticationResult>();
+
+        Assert.NotNull(authenticationResult);
+        Assert.NotEmpty(authenticationResult.AccessToken);
+
+        httpClient.WithAuthorization(authenticationResult.AccessToken);
+
+        /* arrange: create a new client to delete */
+        var payload = _fixture.Build<ClientCreationScheme>()
+            .With(client => client.Name, $"test-client-{Guid.NewGuid()}")
+            .With(client => client.Flows, [Grant.ClientCredentials])
+            .With(client => client.RedirectUris, [])
+            .Create();
+
+        var createResponse = await httpClient.PostAsJsonAsync("api/v1/clients", payload);
+        var filters = ClientFilters.WithSpecifications()
+            .WithName(payload.Name)
+            .Build();
+
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+
+        var clients = await clientCollection.GetClientsAsync(filters, CancellationToken.None);
+        var client = clients.FirstOrDefault();
+
+        Assert.NotEmpty(clients);
+        Assert.NotNull(client);
+
+        /* act: send DELETE request to remove client */
+        var response = await httpClient.DeleteAsync($"api/v1/clients/{client.Id}");
+        var result = await clientCollection.GetClientsAsync(filters, CancellationToken.None);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        Assert.DoesNotContain(result, current => current.Id == client.Id);
+    }
 }
