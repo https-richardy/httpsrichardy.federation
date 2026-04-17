@@ -7,7 +7,7 @@
     <div class="w-full lg:w-1/2 flex items-center justify-center bg-white px-4 py-8 lg:py-0">
         <div class="w-full max-w-md px-4 lg:px-8">
             @if (
-                ViewData.ModelState.ContainsKey(RealmErrors.RealmDoesNotExist.Code) ||
+                ViewData.ModelState.ContainsKey(ClientErrors.ClientDoesNotExist.Code) ||
                 ViewData.ModelState.ContainsKey(AuthorizationErrors.RedirectUriNotAllowed.Code)
             )
             {

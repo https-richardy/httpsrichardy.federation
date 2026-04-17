@@ -7,6 +7,7 @@ public sealed class AuthorizePage : PageModel
 
     private readonly ITokenCollection _tokenCollection;
     private readonly IRealmCollection _realmCollection;
+    private readonly IClientCollection _clientCollection;
     private readonly IRealmProvider _realmProvider;
 
     #region constructors
@@ -15,13 +16,15 @@ public sealed class AuthorizePage : PageModel
         IUserCollection userCollection,
         IRealmProvider realmProvider,
         IRealmCollection realmCollection,
-        ITokenCollection tokenCollection)
+        ITokenCollection tokenCollection,
+        IClientCollection clientCollection)
     {
         _dispatcher = dispatcher;
         _userCollection = userCollection;
         _realmCollection = realmCollection;
         _realmProvider = realmProvider;
         _tokenCollection = tokenCollection;
+        _clientCollection = clientCollection;
     }
     #endregion
 
@@ -33,12 +36,29 @@ public sealed class AuthorizePage : PageModel
 
     public async Task<IActionResult> OnGetAsync()
     {
-        var filters = RealmFilters.WithSpecifications()
+        var filters = ClientFilters.WithSpecifications()
             .WithClientId(Parameters.ClientId)
             .Build();
 
-        var realms = await _realmCollection.GetRealmsAsync(filters);
-        var realm = realms.FirstOrDefault();
+        var clients = await _clientCollection.GetClientsAsync(filters);
+        var client = clients.FirstOrDefault();
+
+        if (client is null)
+        {
+            ModelState.AddModelError(
+                key: ClientErrors.ClientDoesNotExist.Code,
+                errorMessage: ClientErrors.ClientDoesNotExist.Description
+            );
+
+            return Page();
+        }
+
+        var realmFilters = RealmFilters.WithSpecifications()
+            .WithIdentifier(client.RealmId)
+            .Build();
+
+        var realms = await _realmCollection.GetRealmsAsync(realmFilters);
+        var realm = realms.First();
 
         if (realm is null)
         {
@@ -71,7 +91,11 @@ public sealed class AuthorizePage : PageModel
         var result = await _dispatcher.DispatchAsync(Credentials);
         if (result.IsFailure)
         {
-            ModelState.AddModelError(result.Error.Code, result.Error.Description);
+            ModelState.AddModelError(
+                key: result.Error.Code,
+                errorMessage: result.Error.Description
+            );
+
             return Page();
         }
 
@@ -86,7 +110,11 @@ public sealed class AuthorizePage : PageModel
 
         if (user is null)
         {
-            ModelState.AddModelError(AuthenticationErrors.UserNotFound.Code, AuthenticationErrors.UserNotFound.Description);
+            ModelState.AddModelError(
+                key: AuthenticationErrors.UserNotFound.Code,
+                errorMessage: AuthenticationErrors.UserNotFound.Description
+            );
+
             return Page();
         }
 
