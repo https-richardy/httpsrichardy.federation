@@ -9,7 +9,7 @@ public static class ClientsConventions
     public static void GetClientsAsync(ClientsFetchParameters request, CancellationToken cancellation) { }
 
     [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Prefix)]
-    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ClientScheme), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(Error), StatusCodes.Status409Conflict)]
     public static void CreateClientAsync(ClientCreationScheme request, CancellationToken cancellation) { }
 
