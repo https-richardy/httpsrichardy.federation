@@ -5,11 +5,13 @@ public sealed class ConnectEndpointTests(IntegrationEnvironmentFixture factory) 
 {
     private readonly Fixture _fixture = new();
 
-    [Fact(DisplayName = "[e2e] - when POST /openid/connect/token with valid realm credentials should return access token")]
-    public async Task WhenPostTokenWithValidRealmCredentials_ShouldReturnAccessToken()
+    [Fact(DisplayName = "[e2e] - when POST /openid/connect/token with valid client credentials should return access token")]
+    public async Task WhenPostTokenWithValidClientCredentials_ShouldReturnAccessToken()
     {
         /* arrange: authenticate user and get access token */
+        var clientCollection = factory.Services.GetRequiredService<IClientCollection>();
         var httpClient = factory.HttpClient.WithRealmHeader("master");
+
         var userCredentials = new AuthenticationCredentials
         {
             Username = "federation.testing.user",
@@ -24,35 +26,46 @@ public sealed class ConnectEndpointTests(IntegrationEnvironmentFixture factory) 
 
         httpClient.WithAuthorization(authentication.AccessToken);
 
-        /* arrange: create a realm to use as client */
-        var payload = _fixture.Build<RealmCreationScheme>()
-            .With(realm => realm.Name, $"test-realm-{Guid.NewGuid()}")
-            .With(realm => realm.Description, $"test-description-{Guid.NewGuid()}")
+        /* arrange: create a client */
+        var payload = _fixture.Build<ClientCreationScheme>()
+            .With(client => client.Name, "root")
+            .With(client => client.Flows, [Grant.ClientCredentials])
+            .With(client => client.RedirectUris, [])
             .Create();
 
-        var realmResponse = await httpClient.PostAsJsonAsync("api/v1/realms", payload);
-        var realm = await realmResponse.Content.ReadFromJsonAsync<RealmDetailsScheme>();
+        var response = await httpClient.PostAsJsonAsync("api/v1/clients", payload);
 
-        Assert.NotNull(realm);
-        Assert.Equal(HttpStatusCode.Created, realmResponse.StatusCode);
+        Assert.NotNull(response);
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
-        /* arrange: prepare client credentials using realm data */
+        var filters = ClientFilters.WithSpecifications()
+            .WithName(payload.Name)
+            .Build();
+
+        var clients = await clientCollection.GetClientsAsync(filters);
+        var client = clients.FirstOrDefault();
+
+        Assert.NotEmpty(clients);
+        Assert.NotNull(client);
+
+        /* arrange: prepare client credentials */
         var credentials = new Dictionary<string, string>
         {
             { "grant_type", "client_credentials" },
-            { "client_id", realm.ClientId },
-            { "client_secret", realm.ClientSecret }
+            { "client_id", client.ClientId },
+            { "client_secret", client.Secret }
         };
 
         var content = new FormUrlEncodedContent(credentials);
         var connectClient = factory.HttpClient;
 
         /* act: send POST request to token endpoint */
-        var response = await connectClient.PostAsync("api/v1/protocol/open-id/connect/token", content);
-        var grantedToken = await response.Content.ReadFromJsonAsync<ClientAuthenticationResult>();
+        var httpResponse = await connectClient.PostAsync("api/v1/protocol/open-id/connect/token", content);
+        var grantedToken = await httpResponse.Content.ReadFromJsonAsync<ClientAuthenticationResult>();
 
         /* assert: response should be 200 OK */
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, httpResponse.StatusCode);
+
         Assert.NotNull(grantedToken);
         Assert.False(string.IsNullOrWhiteSpace(grantedToken.AccessToken));
     }
@@ -86,7 +99,9 @@ public sealed class ConnectEndpointTests(IntegrationEnvironmentFixture factory) 
     public async Task WhenPostTokenWithInvalidClientSecret_ShouldReturnUnauthorized()
     {
         /* arrange: authenticate user and get access token */
+        var clientCollection = factory.Services.GetRequiredService<IClientCollection>();
         var httpClient = factory.HttpClient.WithRealmHeader("master");
+
         var userCredentials = new AuthenticationCredentials
         {
             Username = "federation.testing.user",
@@ -100,37 +115,47 @@ public sealed class ConnectEndpointTests(IntegrationEnvironmentFixture factory) 
 
         httpClient.WithAuthorization(authentication.AccessToken);
 
-        /* arrange: create a realm */
-        var payload = _fixture.Build<RealmCreationScheme>()
-            .With(realm => realm.Name, $"test-realm-{Guid.NewGuid()}")
-            .With(realm => realm.Description, $"test-description-{Guid.NewGuid()}")
+        /* arrange: create a client */
+        var payload = _fixture.Build<ClientCreationScheme>()
+            .With(client => client.Name, "admin")
+            .With(client => client.Flows, [Grant.ClientCredentials])
+            .With(client => client.RedirectUris, [])
             .Create();
 
-        var httpResponse = await httpClient.PostAsJsonAsync("api/v1/realms", payload);
-        var realm = await httpResponse.Content.ReadFromJsonAsync<RealmDetailsScheme>();
+        var response = await httpClient.PostAsJsonAsync("api/v1/clients", payload);
 
-        Assert.NotNull(realm);
+        Assert.NotNull(response);
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+        var filters = ClientFilters.WithSpecifications()
+            .WithName(payload.Name)
+            .Build();
+
+        var clients = await clientCollection.GetClientsAsync(filters);
+        var client = clients.FirstOrDefault();
+
+        Assert.NotEmpty(clients);
+        Assert.NotNull(client);
 
         /* arrange: prepare credentials with wrong secret */
         var credentials = new Dictionary<string, string>
         {
             { "grant_type", "client_credentials" },
-            { "client_id", realm.ClientId },
+            { "client_id", client.ClientId },
             { "client_secret", "wrong-secret" }
         };
 
         /* act: send POST request with invalid secret */
-
         var content = new FormUrlEncodedContent(credentials);
         var connectClient = factory.HttpClient;
 
-        var response = await connectClient.PostAsync("api/v1/protocol/open-id/connect/token", content);
-        var error = await response.Content.ReadFromJsonAsync<Error>();
+        var httpResponse = await connectClient.PostAsync("api/v1/protocol/open-id/connect/token", content);
+        var error = await httpResponse.Content.ReadFromJsonAsync<Error>();
 
         /* assert: response should be 401 Unauthorized */
         Assert.NotNull(error);
 
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, httpResponse.StatusCode);
         Assert.Equal(AuthenticationErrors.InvalidClientCredentials, error);
     }
 
@@ -200,14 +225,16 @@ public sealed class ConnectEndpointTests(IntegrationEnvironmentFixture factory) 
         // arrange: resolve required dependencies
         var tokenCollection = factory.Services.GetRequiredService<ITokenCollection>();
         var userCollection = factory.Services.GetRequiredService<IUserCollection>();
+        var clientCollection = factory.Services.GetRequiredService<IClientCollection>();
 
-        // arrange: authenticate as master to create realm
+        // arrange: authenticate as master to create client and realm
         var masterClient = factory.HttpClient.WithRealmHeader("master");
         var masterCredentials = new AuthenticationCredentials
         {
             Username = "federation.testing.user",
             Password = "federation.testing.password"
         };
+
         var authentication = await masterClient.PostAsJsonAsync("api/v1/identity/authenticate", masterCredentials);
         var grantedToken = await authentication.Content.ReadFromJsonAsync<AuthenticationResult>();
 
@@ -217,16 +244,45 @@ public sealed class ConnectEndpointTests(IntegrationEnvironmentFixture factory) 
         masterClient.WithAuthorization(grantedToken.AccessToken);
 
         // arrange: create realm
-        var payload = _fixture.Build<RealmCreationScheme>()
+        var realmPayload = _fixture.Build<RealmCreationScheme>()
             .With(realm => realm.Name, $"test-realm-{Guid.NewGuid()}")
             .With(realm => realm.Description, $"test-description-{Guid.NewGuid()}")
             .Create();
 
-        var realmResponse = await masterClient.PostAsJsonAsync("api/v1/realms", payload);
+        var realmResponse = await masterClient.PostAsJsonAsync("api/v1/realms", realmPayload);
         var realm = await realmResponse.Content.ReadFromJsonAsync<RealmDetailsScheme>();
 
         Assert.NotNull(realm);
         Assert.Equal(HttpStatusCode.Created, realmResponse.StatusCode);
+
+        // arrange: create client for authorization_code grant
+        var realmMasterClient = factory.HttpClient.WithRealmHeader(realm.Name);
+        var realmAuth = await realmMasterClient.PostAsJsonAsync("api/v1/identity/authenticate", masterCredentials);
+
+        var realmAdminClient = factory.HttpClient
+            .WithRealmHeader(realm.Name)
+            .WithAuthorization(grantedToken.AccessToken);
+
+        var payload = _fixture.Build<ClientCreationScheme>()
+            .With(client => client.Name, "root")
+            .With(client => client.Flows, [Grant.ClientCredentials])
+            .With(client => client.RedirectUris, [])
+            .Create();
+
+        var httpResponse = await realmAdminClient.PostAsJsonAsync("api/v1/clients", payload);
+
+        Assert.NotNull(httpResponse);
+        Assert.Equal(HttpStatusCode.Created, httpResponse.StatusCode);
+
+        var clientFilters = ClientFilters.WithSpecifications()
+            .WithName(payload.Name)
+            .Build();
+
+        var clients = await clientCollection.GetClientsAsync(clientFilters);
+        var client = clients.FirstOrDefault();
+
+        Assert.NotEmpty(clients);
+        Assert.NotNull(client);
 
         // arrange: create user for realm
         var credentials = new IdentityEnrollmentCredentials
@@ -297,7 +353,7 @@ public sealed class ConnectEndpointTests(IntegrationEnvironmentFixture factory) 
         {
             { "grant_type", "authorization_code" },
             { "code", authorizationCode },
-            { "client_id", realm.ClientId },
+            { "client_id", client.ClientId },
             { "code_verifier", codeVerifier }
         };
 
