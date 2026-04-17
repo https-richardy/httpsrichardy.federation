@@ -243,4 +243,106 @@ public sealed class ClientEndpointTests(IntegrationEnvironmentFixture factory) :
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         Assert.DoesNotContain(result, current => current.Id == client.Id);
     }
+
+    [Fact(DisplayName = "[e2e] - when DELETE /clients/{id} with non-existent client should return 404 #ERROR-2D943")]
+    public async Task WhenDeleteClientsWithNonExistentClient_ShouldReturnNotFound()
+    {
+        /* arrange: authenticate user and get access token */
+        var httpClient = factory.HttpClient.WithRealmHeader("master");
+        var credentials = new AuthenticationCredentials
+        {
+            Username = "federation.testing.user",
+            Password = "federation.testing.password"
+        };
+
+        var authenticationResponse = await httpClient.PostAsJsonAsync("api/v1/identity/authenticate", credentials);
+        var authenticationResult = await authenticationResponse.Content.ReadFromJsonAsync<AuthenticationResult>();
+
+        Assert.NotNull(authenticationResult);
+        Assert.NotEmpty(authenticationResult.AccessToken);
+
+        httpClient.WithAuthorization(authenticationResult.AccessToken);
+
+        /* arrange: prepare request with a non-existent client ID */
+        var nonExistentClientId = Guid.NewGuid().ToString();
+
+        /* act: send DELETE request for non-existent client */
+        var response = await httpClient.DeleteAsync($"api/v1/clients/{nonExistentClientId}");
+        var error = await response.Content.ReadFromJsonAsync<Error>();
+
+        /* assert: response should be 404 Not Found */
+        Assert.NotNull(error);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal(ClientErrors.ClientDoesNotExist, error);
+    }
+
+    [Fact(DisplayName = "[e2e] - when GET /clients/{id}/permissions should return client's assigned permissions")]
+    public async Task WhenGetClientPermissions_ShouldReturnAssignedPermissions()
+    {
+        /* arrange: resolve required dependencies */
+        var clientCollection = factory.Services.GetRequiredService<IClientCollection>();
+        var realmCollection = factory.Services.GetRequiredService<IRealmCollection>();
+
+        /* arrange: authenticate user and get access token */
+        var httpClient = factory.HttpClient.WithRealmHeader("master");
+        var credentials = new AuthenticationCredentials
+        {
+            Username = "federation.testing.user",
+            Password = "federation.testing.password"
+        };
+
+        var authenticationResponse = await httpClient.PostAsJsonAsync("api/v1/identity/authenticate", credentials);
+        var authenticationResult = await authenticationResponse.Content.ReadFromJsonAsync<AuthenticationResult>();
+
+        Assert.NotNull(authenticationResult);
+        Assert.NotEmpty(authenticationResult.AccessToken);
+
+        httpClient.WithAuthorization(authenticationResult.AccessToken);
+
+        /* arrange: create and insert client with assigned permissions */
+        var realmFilters = RealmFilters.WithSpecifications()
+            .WithName("master")
+            .Build();
+
+        var realms = await realmCollection.GetRealmsAsync(realmFilters, CancellationToken.None);
+        var realm = realms.FirstOrDefault();
+
+        Assert.NotNull(realm);
+
+        var permission1 = _fixture.Build<Permission>()
+            .With(permission => permission.Name, $"test.permission.{Guid.NewGuid()}")
+            .With(permission => permission.RealmId, realm.Id)
+            .With(permission => permission.IsDeleted, false)
+            .Create();
+
+        var permission2 = _fixture.Build<Permission>()
+            .With(permission => permission.Name, $"test.permission.{Guid.NewGuid()}")
+            .With(permission => permission.RealmId, realm.Id)
+            .With(permission => permission.IsDeleted, false)
+            .Create();
+
+        var client = _fixture.Build<Client>()
+            .With(current => current.Name, $"test-client-{Guid.NewGuid()}")
+            .With(current => current.ClientId, $"test-client-id-{Guid.NewGuid()}")
+            .With(current => current.Secret, $"test-client-secret-{Guid.NewGuid()}")
+            .With(current => current.RealmId, realm.Id)
+            .With(current => current.IsDeleted, false)
+            .With(current => current.Permissions, [permission1, permission2])
+            .Create();
+
+        await clientCollection.InsertAsync(client);
+
+        /* act: send GET request to retrieve client's permissions */
+        var response = await httpClient.GetAsync($"api/v1/clients/{client.Id}/permissions");
+        var permissions = await response.Content.ReadFromJsonAsync<IReadOnlyCollection<PermissionDetailsScheme>>();
+
+        /* assert: response should be 200 OK */
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(permissions);
+
+        /* assert: assigned permissions should be returned */
+        Assert.Contains(permissions, permission => permission.Name == permission1.Name);
+        Assert.Contains(permissions, permission => permission.Name == permission2.Name);
+    }
 }
