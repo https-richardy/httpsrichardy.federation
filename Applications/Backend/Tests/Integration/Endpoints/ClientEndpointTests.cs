@@ -345,4 +345,167 @@ public sealed class ClientEndpointTests(IntegrationEnvironmentFixture factory) :
         Assert.Contains(permissions, permission => permission.Name == permission1.Name);
         Assert.Contains(permissions, permission => permission.Name == permission2.Name);
     }
+
+    [Fact(DisplayName = "[e2e] - when POST /clients/{id}/permissions with valid permission should assign permission successfully")]
+    public async Task WhenPostClientPermissionsWithValidPermission_ShouldAssignPermissionSuccessfully()
+    {
+        /* arrange: resolve required dependencies */
+        var clientCollection = factory.Services.GetRequiredService<IClientCollection>();
+        var permissionCollection = factory.Services.GetRequiredService<IPermissionCollection>();
+
+        /* arrange: authenticate user and get access token */
+        var httpClient = factory.HttpClient.WithRealmHeader("master");
+        var credentials = new AuthenticationCredentials
+        {
+            Username = "federation.testing.user",
+            Password = "federation.testing.password"
+        };
+
+        var authenticationResponse = await httpClient.PostAsJsonAsync("api/v1/identity/authenticate", credentials);
+        var authenticationResult = await authenticationResponse.Content.ReadFromJsonAsync<AuthenticationResult>();
+
+        Assert.NotNull(authenticationResult);
+        Assert.NotEmpty(authenticationResult.AccessToken);
+
+        httpClient.WithAuthorization(authenticationResult.AccessToken);
+
+        /* arrange: create a new client */
+        var clientPayload = _fixture.Build<ClientCreationScheme>()
+            .With(client => client.Name, $"test-client-{Guid.NewGuid()}")
+            .With(client => client.Flows, [Grant.ClientCredentials])
+            .With(client => client.RedirectUris, [])
+            .Create();
+
+        var clientResponse = await httpClient.PostAsJsonAsync("api/v1/clients", clientPayload);
+
+        Assert.Equal(HttpStatusCode.Created, clientResponse.StatusCode);
+
+        var clientFilters = ClientFilters.WithSpecifications()
+            .WithName(clientPayload.Name)
+            .Build();
+
+        var clients = await clientCollection.GetClientsAsync(clientFilters, CancellationToken.None);
+        var client = clients.FirstOrDefault();
+
+        Assert.NotEmpty(clients);
+        Assert.NotNull(client);
+
+        /* arrange: create a new permission */
+        var permissionPayload = _fixture.Build<PermissionCreationScheme>()
+            .With(permission => permission.Name, $"test.permission.{Guid.NewGuid()}")
+            .Create();
+
+        var permissionResponse = await httpClient.PostAsJsonAsync("api/v1/permissions", permissionPayload);
+
+        Assert.Equal(HttpStatusCode.Created, permissionResponse.StatusCode);
+
+        var permissionFilters = PermissionFilters.WithSpecifications()
+            .WithName(permissionPayload.Name)
+            .Build();
+
+        var permissions = await permissionCollection.GetPermissionsAsync(permissionFilters, CancellationToken.None);
+        var permission = permissions.FirstOrDefault();
+
+        Assert.NotEmpty(permissions);
+        Assert.NotNull(permission);
+
+        /* arrange: prepare request to assign permission to client */
+        var payload = _fixture.Build<AssignClientPermissionScheme>()
+            .With(assignment => assignment.PermissionName, permission.Name)
+            .Create();
+
+        /* act: send POST request to assign permission to client */
+        var response = await httpClient.PostAsJsonAsync($"api/v1/clients/{client.Id}/permissions", payload);
+        var assignedPermissions = await response.Content.ReadFromJsonAsync<IReadOnlyCollection<PermissionDetailsScheme>>();
+
+        /* assert: response should be 200 OK and permissions list should be returned */
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(assignedPermissions);
+
+        /* assert: the assigned permission should be in the returned list */
+        Assert.Contains(assignedPermissions, current => current.Name == permission.Name);
+    }
+
+    [Fact(DisplayName = "[e2e] - when POST /clients/{id}/permissions with duplicate permission should return 409 #ERROR-8D71B")]
+    public async Task WhenPostClientPermissionsWithDuplicatePermission_ShouldReturnConflict()
+    {
+        /* arrange: resolve required dependencies */
+        var clientCollection = factory.Services.GetRequiredService<IClientCollection>();
+        var permissionCollection = factory.Services.GetRequiredService<IPermissionCollection>();
+
+        /* arrange: authenticate user and get access token */
+        var httpClient = factory.HttpClient.WithRealmHeader("master");
+        var credentials = new AuthenticationCredentials
+        {
+            Username = "federation.testing.user",
+            Password = "federation.testing.password"
+        };
+
+        var authenticationResponse = await httpClient.PostAsJsonAsync("api/v1/identity/authenticate", credentials);
+        var authenticationResult = await authenticationResponse.Content.ReadFromJsonAsync<AuthenticationResult>();
+
+        Assert.NotNull(authenticationResult);
+        Assert.NotEmpty(authenticationResult.AccessToken);
+
+        httpClient.WithAuthorization(authenticationResult.AccessToken);
+
+        /* arrange: create a new client */
+        var clientPayload = _fixture.Build<ClientCreationScheme>()
+            .With(client => client.Name, $"test-client-{Guid.NewGuid()}")
+            .With(client => client.Flows, [Grant.ClientCredentials])
+            .With(client => client.RedirectUris, [])
+            .Create();
+
+        var clientResponse = await httpClient.PostAsJsonAsync("api/v1/clients", clientPayload);
+
+        Assert.Equal(HttpStatusCode.Created, clientResponse.StatusCode);
+
+        var clientFilters = ClientFilters.WithSpecifications()
+            .WithName(clientPayload.Name)
+            .Build();
+
+        var clients = await clientCollection.GetClientsAsync(clientFilters, CancellationToken.None);
+        var client = clients.FirstOrDefault();
+
+        Assert.NotEmpty(clients);
+        Assert.NotNull(client);
+
+        /* arrange: create a new permission */
+        var permissionPayload = _fixture.Build<PermissionCreationScheme>()
+            .With(permission => permission.Name, $"test.permission.{Guid.NewGuid()}")
+            .Create();
+
+        var permissionResponse = await httpClient.PostAsJsonAsync("api/v1/permissions", permissionPayload);
+
+        Assert.Equal(HttpStatusCode.Created, permissionResponse.StatusCode);
+
+        var permissionFilters = PermissionFilters.WithSpecifications()
+            .WithName(permissionPayload.Name)
+            .Build();
+
+        var permissions = await permissionCollection.GetPermissionsAsync(permissionFilters, CancellationToken.None);
+        var permission = permissions.FirstOrDefault();
+
+        Assert.NotEmpty(permissions);
+        Assert.NotNull(permission);
+
+        /* arrange: assign permission to client first time */
+        var payload = _fixture.Build<AssignClientPermissionScheme>()
+            .With(assignment => assignment.PermissionName, permission.Name)
+            .Create();
+
+        var firstResponse = await httpClient.PostAsJsonAsync($"api/v1/clients/{client.Id}/permissions", payload);
+
+        Assert.Equal(HttpStatusCode.OK, firstResponse.StatusCode);
+
+        /* act: attempt to assign the same permission again */
+        var secondResponse = await httpClient.PostAsJsonAsync($"api/v1/clients/{client.Id}/permissions", payload);
+        var error = await secondResponse.Content.ReadFromJsonAsync<Error>();
+
+        /* assert: response should be 409 Conflict */
+        Assert.NotNull(error);
+
+        Assert.Equal(HttpStatusCode.Conflict, secondResponse.StatusCode);
+        Assert.Equal(ClientErrors.ClientAlreadyHasPermission, error);
+    }
 }
