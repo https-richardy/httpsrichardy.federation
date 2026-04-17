@@ -142,12 +142,49 @@ public sealed class PermissionEndpointTests(IntegrationEnvironmentFixture factor
         Assert.NotNull(realm);
         Assert.Equal(HttpStatusCode.Created, realmResponse.StatusCode);
 
-        /* arrange: authenticate realm via OAuth 2.0 client_credentials */
+        /* arrange: create a client scoped to the new realm */
+        var clientCollection = factory.Services.GetRequiredService<IClientCollection>();
+        var realmAdminClient = factory.HttpClient
+            .WithRealmHeader(realm.Name)
+            .WithAuthorization(masterAuthenticationResult.AccessToken);
+
+        var clientPayload = _fixture.Build<ClientCreationScheme>()
+            .With(client => client.Name, "nubank")
+            .With(client => client.Flows, [Grant.ClientCredentials])
+            .With(client => client.RedirectUris, [])
+            .Create();
+
+        var clientResponse = await realmAdminClient.PostAsJsonAsync("api/v1/clients", clientPayload);
+
+        Assert.NotNull(clientResponse);
+        Assert.Equal(HttpStatusCode.Created, clientResponse.StatusCode);
+
+        var clientFilters = ClientFilters.WithSpecifications()
+            .WithName(clientPayload.Name)
+            .Build();
+
+        var clients = await clientCollection.GetClientsAsync(clientFilters);
+        var client = clients.FirstOrDefault();
+
+        Assert.NotEmpty(clients);
+        Assert.NotNull(client);
+
+        /* arrange: assign CreatePermission to the client using the master-scoped admin client */
+        var assignPayload = _fixture.Build<AssignClientPermissionScheme>()
+            .With(assignment => assignment.PermissionName, Permissions.CreatePermission)
+            .Create();
+
+        var assignment = await realmAdminClient.PostAsJsonAsync($"api/v1/clients/{client.Id}/permissions", assignPayload);
+
+        Assert.NotNull(assignment);
+        Assert.Equal(HttpStatusCode.OK, assignment.StatusCode);
+
+        /* arrange: authenticate via OAuth 2.0 client_credentials using the created client */
         var oauthCredentials = new Dictionary<string, string>
         {
             { "grant_type", "client_credentials" },
-            { "client_id", realm.ClientId },
-            { "client_secret", realm.ClientSecret }
+            { "client_id", client.ClientId },
+            { "client_secret", client.Secret }
         };
 
         var oauthContent = new FormUrlEncodedContent(oauthCredentials);
