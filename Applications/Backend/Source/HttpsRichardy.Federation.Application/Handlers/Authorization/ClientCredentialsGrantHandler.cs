@@ -1,6 +1,6 @@
 ﻿namespace HttpsRichardy.Federation.Application.Handlers.Authorization;
 
-public sealed class ClientCredentialsGrantHandler(IClientCollection clientCollection, IPasswordHasher passwordHasher, ISecurityTokenService tokenService) :
+public sealed class ClientCredentialsGrantHandler(IClientCollection clientCollection, ISecurityTokenService tokenService) :
     IAuthorizationFlowHandler
 {
     public Grant Grant => Grant.ClientCredentials;
@@ -19,7 +19,7 @@ public sealed class ClientCredentialsGrantHandler(IClientCollection clientCollec
             return Result<ClientAuthenticationResult>.Failure(AuthenticationErrors.ClientNotFound);
         }
 
-        if (!await passwordHasher.VerifyPasswordAsync(parameters.ClientId + client.Name, client.Secret))
+        if (parameters.ClientSecret != client.Secret)
         {
             return Result<ClientAuthenticationResult>.Failure(AuthenticationErrors.InvalidClientCredentials);
         }
