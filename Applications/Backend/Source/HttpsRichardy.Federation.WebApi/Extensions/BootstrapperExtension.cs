@@ -34,6 +34,11 @@ public static class BootstrapperExtension
             return;
         }
 
+        await realmCollection.InsertAsync(defaultRealm);
+
+        realms = await realmCollection.GetRealmsAsync(realmFilters, cancellation: default);
+        defaultRealm = realms.FirstOrDefault() ?? throw new InvalidOperationException("Unable to load the default realm after creation.");
+
         defaultRealm.Permissions = [.. RealmPermissions.SystemPermissions.Select(permissionName => new Permission
         {
             Id = Identifier.Generate<Permission>(),
@@ -41,14 +46,15 @@ public static class BootstrapperExtension
             RealmId = defaultRealm.Id
         })];
 
-        defaultClient.Secret = await passwordHasher.HashPasswordAsync(clientCredentials.ClientId + defaultClient.Name);
+        defaultClient.ClientId = clientCredentials.ClientId;
+        defaultClient.RealmId = defaultRealm.Id;
+        defaultClient.Secret = clientCredentials.ClientSecret;
         defaultClient.Permissions = [.. defaultRealm.Permissions];
 
         defaultRealm.Clients = [defaultClient];
 
         realmProvider.SetRealm(defaultRealm);
 
-        await realmCollection.InsertAsync(defaultRealm);
         await permissionCollection.InsertManyAsync(defaultRealm.Permissions);
         await clientCollection.InsertAsync(defaultClient);
 
