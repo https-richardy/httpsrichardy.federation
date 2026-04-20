@@ -1080,8 +1080,6 @@ public sealed class ClientEndpointTests(IntegrationEnvironmentFixture factory) :
 
         /* act: send DELETE request to revoke first audience */
         var response = await httpClient.DeleteAsync($"api/v1/clients/{client.Id}/audiences/{audience1}");
-        var contentString = await response.Content.ReadAsStringAsync();
-
         var remainingAudiences = await response.Content.ReadFromJsonAsync<IReadOnlyCollection<string>>();
 
         /* assert: response should be 200 OK */
