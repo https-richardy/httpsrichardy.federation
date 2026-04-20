@@ -117,7 +117,7 @@ public sealed class ConnectEndpointTests(IntegrationEnvironmentFixture factory) 
 
         /* arrange: create a client */
         var payload = _fixture.Build<ClientCreationScheme>()
-            .With(client => client.Name, "admin")
+            .With(client => client.Name, "nexus")
             .With(client => client.Flows, [Grant.ClientCredentials])
             .With(client => client.RedirectUris, [])
             .Create();
