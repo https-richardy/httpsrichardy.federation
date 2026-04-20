@@ -39,6 +39,16 @@ public sealed class ClaimsBuilder
         return this;
     }
 
+    public ClaimsBuilder WithAudiences(IEnumerable<string> audiences)
+    {
+        foreach (var audience in audiences)
+        {
+            _claims.Add(new Claim(JwtRegisteredClaimNames.Aud, audience));
+        }
+
+        return this;
+    }
+
     public ClaimsBuilder WithClaim(string type, string value)
     {
         _claims.Add(new Claim(type, value));

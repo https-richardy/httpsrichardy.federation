@@ -71,9 +71,11 @@ public sealed class JwtSecurityTokenService(
         var realm = realmProvider.GetCurrentRealm();
 
         var claims = new ClaimsBuilder()
+            .WithSubject(client.Id)
             .WithRealmName(realm.Name)
             .WithClientId(client.Id)
             .WithPermissions(client.Permissions)
+            .WithAudiences(client.Audiences.Select(audience => audience.Value))
             .Build();
 
         var privateKey = await GetPrivateKeyAsync(cancellation);
