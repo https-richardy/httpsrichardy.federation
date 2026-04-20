@@ -1075,8 +1075,8 @@ public sealed class ClientEndpointTests(IntegrationEnvironmentFixture factory) :
         var audience1Payload = new AssignClientAudienceScheme { Value = audience1 };
         var audience2Payload = new AssignClientAudienceScheme { Value = audience2 };
 
-        var x = await httpClient.PostAsJsonAsync($"api/v1/clients/{client.Id}/audiences", audience1Payload);
-        var y = await httpClient.PostAsJsonAsync($"api/v1/clients/{client.Id}/audiences", audience2Payload);
+        await httpClient.PostAsJsonAsync($"api/v1/clients/{client.Id}/audiences", audience1Payload);
+        await httpClient.PostAsJsonAsync($"api/v1/clients/{client.Id}/audiences", audience2Payload);
 
         /* act: send DELETE request to revoke first audience */
         var response = await httpClient.DeleteAsync($"api/v1/clients/{client.Id}/audiences/{audience1}");
