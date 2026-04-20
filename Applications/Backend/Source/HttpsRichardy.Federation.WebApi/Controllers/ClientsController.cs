@@ -158,10 +158,7 @@ public sealed class ClientsController(IDispatcher dispatcher) : ControllerBase
                 StatusCode(StatusCodes.Status404NotFound, result.Error),
 
             { IsFailure: true } when result.Error == ClientErrors.ClientAlreadyHasAudience =>
-                StatusCode(StatusCodes.Status409Conflict, result.Error),
-
-            { IsFailure: true } when result.Error == ClientErrors.InvalidAudienceValue =>
-                StatusCode(StatusCodes.Status400BadRequest, result.Error),
+                StatusCode(StatusCodes.Status409Conflict, result.Error)
         };
     }
 
