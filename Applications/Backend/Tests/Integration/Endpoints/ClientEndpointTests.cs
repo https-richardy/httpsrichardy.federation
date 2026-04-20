@@ -760,4 +760,166 @@ public sealed class ClientEndpointTests(IntegrationEnvironmentFixture factory) :
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         Assert.Equal(ClientErrors.PermissionNotAssigned, error);
     }
+
+    [Fact(DisplayName = "[e2e] - when POST /clients/{id}/audiences with valid audience should assign audience successfully")]
+    public async Task WhenPostClientAudiencesWithValidAudience_ShouldAssignAudienceSuccessfully()
+    {
+        /* arrange: resolve required dependencies */
+        var clientCollection = factory.Services.GetRequiredService<IClientCollection>();
+
+        /* arrange: authenticate user and get access token */
+        var httpClient = factory.HttpClient.WithRealmHeader("master");
+        var credentials = new AuthenticationCredentials
+        {
+            Username = "federation.testing.user",
+            Password = "federation.testing.password"
+        };
+
+        var authenticationResponse = await httpClient.PostAsJsonAsync("api/v1/identity/authenticate", credentials);
+        var authenticationResult = await authenticationResponse.Content.ReadFromJsonAsync<AuthenticationResult>();
+
+        Assert.NotNull(authenticationResult);
+        Assert.NotEmpty(authenticationResult.AccessToken);
+
+        httpClient.WithAuthorization(authenticationResult.AccessToken);
+
+        /* arrange: create a new client */
+        var clientPayload = _fixture.Build<ClientCreationScheme>()
+            .With(client => client.Name, $"test-client-{Guid.NewGuid()}")
+            .With(client => client.Flows, [Grant.ClientCredentials])
+            .With(client => client.RedirectUris, [])
+            .Create();
+
+        var clientResponse = await httpClient.PostAsJsonAsync("api/v1/clients", clientPayload);
+
+        Assert.Equal(HttpStatusCode.Created, clientResponse.StatusCode);
+
+        var clientFilters = ClientFilters.WithSpecifications()
+            .WithName(clientPayload.Name)
+            .Build();
+
+        var clients = await clientCollection.GetClientsAsync(clientFilters, CancellationToken.None);
+        var client = clients.FirstOrDefault();
+
+        Assert.NotEmpty(clients);
+        Assert.NotNull(client);
+
+        /* arrange: prepare request to assign audience to client */
+        var payload = new AssignClientAudienceScheme
+        {
+            Value = "https://api.example.com"
+        };
+
+        /* act: send POST request to assign audience to client */
+        var response = await httpClient.PostAsJsonAsync($"api/v1/clients/{client.Id}/audiences", payload);
+        var audiences = await response.Content.ReadFromJsonAsync<IReadOnlyCollection<string>>();
+
+        /* assert: response should be 200 OK and audiences list should be returned */
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(audiences);
+
+        /* assert: the assigned audience should be in the returned list */
+        Assert.Contains(audiences, current => current == payload.Value);
+    }
+
+    [Fact(DisplayName = "[e2e] - when POST /clients/{id}/audiences with duplicate audience should return 409 #ERROR-F4E2A")]
+    public async Task WhenPostClientAudiencesWithDuplicateAudience_ShouldReturnConflict()
+    {
+        /* arrange: resolve required dependencies */
+        var clientCollection = factory.Services.GetRequiredService<IClientCollection>();
+
+        /* arrange: authenticate user and get access token */
+        var httpClient = factory.HttpClient.WithRealmHeader("master");
+        var credentials = new AuthenticationCredentials
+        {
+            Username = "federation.testing.user",
+            Password = "federation.testing.password"
+        };
+
+        var authenticationResponse = await httpClient.PostAsJsonAsync("api/v1/identity/authenticate", credentials);
+        var authenticationResult = await authenticationResponse.Content.ReadFromJsonAsync<AuthenticationResult>();
+
+        Assert.NotNull(authenticationResult);
+        Assert.NotEmpty(authenticationResult.AccessToken);
+
+        httpClient.WithAuthorization(authenticationResult.AccessToken);
+
+        /* arrange: create a new client */
+        var payload = _fixture.Build<ClientCreationScheme>()
+            .With(client => client.Name, $"test-client-{Guid.NewGuid()}")
+            .With(client => client.Flows, [Grant.ClientCredentials])
+            .With(client => client.RedirectUris, [])
+            .Create();
+
+        var clientResponse = await httpClient.PostAsJsonAsync("api/v1/clients", payload);
+
+        Assert.Equal(HttpStatusCode.Created, clientResponse.StatusCode);
+
+        var clientFilters = ClientFilters.WithSpecifications()
+            .WithName(payload.Name)
+            .Build();
+
+        var clients = await clientCollection.GetClientsAsync(clientFilters, CancellationToken.None);
+        var client = clients.FirstOrDefault();
+
+        Assert.NotEmpty(clients);
+        Assert.NotNull(client);
+
+        /* arrange: assign audience to client first time */
+        var content = new AssignClientAudienceScheme
+        {
+            Value = "https://api.example.com"
+        };
+
+        var firstResponse = await httpClient.PostAsJsonAsync($"api/v1/clients/{client.Id}/audiences", content);
+
+        Assert.Equal(HttpStatusCode.OK, firstResponse.StatusCode);
+
+        /* act: attempt to assign the same audience again */
+        var secondResponse = await httpClient.PostAsJsonAsync($"api/v1/clients/{client.Id}/audiences", content);
+        var error = await secondResponse.Content.ReadFromJsonAsync<Error>();
+
+        /* assert: response should be 409 Conflict */
+        Assert.NotNull(error);
+
+        Assert.Equal(HttpStatusCode.Conflict, secondResponse.StatusCode);
+        Assert.Equal(ClientErrors.ClientAlreadyHasAudience, error);
+    }
+
+    [Fact(DisplayName = "[e2e] - when POST /clients/{id}/audiences with non-existent client should return 404 #ERROR-2D943")]
+    public async Task WhenPostClientAudiencesWithNonExistentClient_ShouldReturnNotFound()
+    {
+        /* arrange: authenticate user and get access token */
+        var httpClient = factory.HttpClient.WithRealmHeader("master");
+        var credentials = new AuthenticationCredentials
+        {
+            Username = "federation.testing.user",
+            Password = "federation.testing.password"
+        };
+
+        var authenticationResponse = await httpClient.PostAsJsonAsync("api/v1/identity/authenticate", credentials);
+        var authenticationResult = await authenticationResponse.Content.ReadFromJsonAsync<AuthenticationResult>();
+
+        Assert.NotNull(authenticationResult);
+        Assert.NotEmpty(authenticationResult.AccessToken);
+
+        httpClient.WithAuthorization(authenticationResult.AccessToken);
+
+        /* arrange: prepare request with a non-existent client ID */
+        var nonExistentClientId = Guid.NewGuid().ToString();
+        var payload = new AssignClientAudienceScheme
+        {
+            Value = "https://api.example.com"
+        };
+
+        /* act: send POST request for non-existent client */
+        var response = await httpClient.PostAsJsonAsync($"api/v1/clients/{nonExistentClientId}/audiences", payload);
+        var error = await response.Content.ReadFromJsonAsync<Error>();
+
+        /* assert: response should be 404 Not Found */
+        Assert.NotNull(error);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal(ClientErrors.ClientDoesNotExist, error);
+    }
 }
