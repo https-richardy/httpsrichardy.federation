@@ -1069,17 +1069,19 @@ public sealed class ClientEndpointTests(IntegrationEnvironmentFixture factory) :
         Assert.NotNull(client);
 
         /* arrange: assign two audiences */
-        var audience1 = "https://api1.example.com";
-        var audience2 = "https://api2.example.com";
+        var audience1 = "orion";
+        var audience2 = "sirius";
 
         var audience1Payload = new AssignClientAudienceScheme { Value = audience1 };
         var audience2Payload = new AssignClientAudienceScheme { Value = audience2 };
 
-        await httpClient.PostAsJsonAsync($"api/v1/clients/{client.Id}/audiences", audience1Payload);
-        await httpClient.PostAsJsonAsync($"api/v1/clients/{client.Id}/audiences", audience2Payload);
+        var x = await httpClient.PostAsJsonAsync($"api/v1/clients/{client.Id}/audiences", audience1Payload);
+        var y = await httpClient.PostAsJsonAsync($"api/v1/clients/{client.Id}/audiences", audience2Payload);
 
         /* act: send DELETE request to revoke first audience */
-        var response = await httpClient.DeleteAsync($"api/v1/clients/{client.Id}/audiences/{Uri.EscapeDataString(audience1)}");
+        var response = await httpClient.DeleteAsync($"api/v1/clients/{client.Id}/audiences/{audience1}");
+        var contentString = await response.Content.ReadAsStringAsync();
+
         var remainingAudiences = await response.Content.ReadFromJsonAsync<IReadOnlyCollection<string>>();
 
         /* assert: response should be 200 OK */
@@ -1088,6 +1090,7 @@ public sealed class ClientEndpointTests(IntegrationEnvironmentFixture factory) :
 
         /* assert: only second audience should remain */
         Assert.Single(remainingAudiences);
+
         Assert.Contains(audience2, remainingAudiences);
         Assert.DoesNotContain(audience1, remainingAudiences);
     }
