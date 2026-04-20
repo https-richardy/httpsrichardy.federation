@@ -17,6 +17,11 @@ public static class ClientErrors
         Description: "The client already has the specified audience assigned."
     );
 
+    public static readonly Error AudienceNotAssigned = new(
+        Code: "#ERROR-B3F8E",
+        Description: "The client does not have the specified audience assigned."
+    );
+
     public static readonly Error PermissionNotAssigned = new(
         Code: "#ERROR-C2FB0",
         Description: "The client does not have the specified permission assigned."
