@@ -46,4 +46,11 @@ public static class ClientsConventions
     [ProducesResponseType(typeof(Error), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(Error), StatusCodes.Status409Conflict)]
     public static void AssignAudienceAsync(string id, AssignClientAudienceScheme request, CancellationToken cancellation) { }
+
+    [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Prefix)]
+    [ProducesResponseType(typeof(IReadOnlyCollection<string>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Error), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(Error), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(Error), StatusCodes.Status409Conflict)]
+    public static void RevokeAudienceAsync(string id, string audience, CancellationToken cancellation) { }
 }

@@ -159,6 +159,30 @@ public sealed class ClientsController(IDispatcher dispatcher) : ControllerBase
 
             { IsFailure: true } when result.Error == ClientErrors.ClientAlreadyHasAudience =>
                 StatusCode(StatusCodes.Status409Conflict, result.Error),
+
+            { IsFailure: true } when result.Error == ClientErrors.InvalidAudienceValue =>
+                StatusCode(StatusCodes.Status400BadRequest, result.Error),
+        };
+    }
+
+    [HttpDelete("{id}/audiences/{audience}")]
+    [Stability(Stability.Stable)]
+    [Authorize(Roles = Permissions.EditClient)]
+    public async Task<IActionResult> RevokeAudienceAsync([FromRoute] string id, [FromRoute] string audience, CancellationToken cancellation)
+    {
+        var request = new RevokeClientAudienceScheme { Id = id, Audience = audience };
+        var result = await dispatcher.DispatchAsync(request, cancellation);
+
+        return result switch
+        {
+            { IsSuccess: true } when result.Data is not null =>
+                StatusCode(StatusCodes.Status200OK, result.Data),
+
+            { IsFailure: true } when result.Error == ClientErrors.ClientDoesNotExist =>
+                StatusCode(StatusCodes.Status404NotFound, result.Error),
+
+            { IsFailure: true } when result.Error == ClientErrors.AudienceNotAssigned =>
+                StatusCode(StatusCodes.Status409Conflict, result.Error)
         };
     }
 }
