@@ -922,4 +922,269 @@ public sealed class ClientEndpointTests(IntegrationEnvironmentFixture factory) :
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         Assert.Equal(ClientErrors.ClientDoesNotExist, error);
     }
+
+    [Fact(DisplayName = "[e2e] - when POST /clients/{id}/audiences and generating token should include audiences in JWT")]
+    public async Task WhenAssigningAudiencesAndGeneratingToken_ShouldIncludeAudiencesInJwt()
+    {
+        /* arrange: resolve required dependencies */
+        var clientCollection = factory.Services.GetRequiredService<IClientCollection>();
+
+        /* arrange: authenticate user and get access token */
+        var httpClient = factory.HttpClient.WithRealmHeader("master");
+        var credentials = new AuthenticationCredentials
+        {
+            Username = "federation.testing.user",
+            Password = "federation.testing.password"
+        };
+
+        var authenticationResponse = await httpClient.PostAsJsonAsync("api/v1/identity/authenticate", credentials);
+        var authenticationResult = await authenticationResponse.Content.ReadFromJsonAsync<AuthenticationResult>();
+
+        Assert.NotNull(authenticationResult);
+        Assert.NotEmpty(authenticationResult.AccessToken);
+
+        httpClient.WithAuthorization(authenticationResult.AccessToken);
+
+        /* arrange: create a new client */
+        var clientPayload = _fixture.Build<ClientCreationScheme>()
+            .With(client => client.Name, $"test-client-{Guid.NewGuid()}")
+            .With(client => client.Flows, [Grant.ClientCredentials])
+            .With(client => client.RedirectUris, [])
+            .Create();
+
+        var clientResponse = await httpClient.PostAsJsonAsync("api/v1/clients", clientPayload);
+
+        Assert.Equal(HttpStatusCode.Created, clientResponse.StatusCode);
+
+        var clientFilters = ClientFilters.WithSpecifications()
+            .WithName(clientPayload.Name)
+            .Build();
+
+        var clients = await clientCollection.GetClientsAsync(clientFilters, CancellationToken.None);
+        var client = clients.FirstOrDefault();
+
+        Assert.NotEmpty(clients);
+        Assert.NotNull(client);
+
+        /* arrange: assign first audience */
+        var audience1 = new AssignClientAudienceScheme
+        {
+            Value = "https://api1.example.com"
+        };
+
+        var audience1Response = await httpClient.PostAsJsonAsync($"api/v1/clients/{client.Id}/audiences", audience1);
+
+        Assert.NotNull(audience1Response);
+        Assert.Equal(HttpStatusCode.OK, audience1Response.StatusCode);
+
+        /* arrange: assign second audience */
+        var audience2 = new AssignClientAudienceScheme
+        {
+            Value = "https://api2.example.com"
+        };
+
+        var audience2Response = await httpClient.PostAsJsonAsync($"api/v1/clients/{client.Id}/audiences", audience2);
+
+        Assert.NotNull(audience2Response);
+        Assert.Equal(HttpStatusCode.OK, audience2Response.StatusCode);
+
+        /* arrange: prepare client credentials for token generation */
+        var connectClient = factory.HttpClient;
+        var clientCredentials = new Dictionary<string, string>
+        {
+            { "grant_type", "client_credentials" },
+            { "client_id", client.ClientId },
+            { "client_secret", client.Secret }
+        };
+
+        var content = new FormUrlEncodedContent(clientCredentials);
+
+        /* act: generate token via client_credentials */
+        var tokenResponse = await connectClient.PostAsync("api/v1/protocol/open-id/connect/token", content);
+        var tokenResult = await tokenResponse.Content.ReadFromJsonAsync<ClientAuthenticationResult>();
+
+        Assert.Equal(HttpStatusCode.OK, tokenResponse.StatusCode);
+
+        Assert.NotNull(tokenResult);
+        Assert.NotEmpty(tokenResult.AccessToken);
+
+        /* act: decode JWT to verify audiences */
+        var handler = new JwtSecurityTokenHandler();
+        var token = handler.ReadJwtToken(tokenResult.AccessToken);
+
+        /* assert: token should contain both audiences in the 'aud' claim */
+        var audienceClaims = token.Claims
+            .Where(claim => claim.Type == JwtRegisteredClaimNames.Aud)
+            .Select(claim => claim.Value)
+            .ToList();
+
+        Assert.NotNull(audienceClaims);
+        Assert.NotEmpty(audienceClaims);
+
+        Assert.Contains(audience1.Value, audienceClaims);
+        Assert.Contains(audience2.Value, audienceClaims);
+    }
+
+    [Fact(DisplayName = "[e2e] - when DELETE /clients/{id}/audiences/{audience} should revoke audience successfully")]
+    public async Task WhenDeleteClientAudience_ShouldRevokeAudienceSuccessfully()
+    {
+        /* arrange: resolve required dependencies */
+        var clientCollection = factory.Services.GetRequiredService<IClientCollection>();
+
+        /* arrange: authenticate user and get access token */
+        var httpClient = factory.HttpClient.WithRealmHeader("master");
+        var credentials = new AuthenticationCredentials
+        {
+            Username = "federation.testing.user",
+            Password = "federation.testing.password"
+        };
+
+        var authenticationResponse = await httpClient.PostAsJsonAsync("api/v1/identity/authenticate", credentials);
+        var authenticationResult = await authenticationResponse.Content.ReadFromJsonAsync<AuthenticationResult>();
+
+        Assert.NotNull(authenticationResult);
+        Assert.NotEmpty(authenticationResult.AccessToken);
+
+        httpClient.WithAuthorization(authenticationResult.AccessToken);
+
+        /* arrange: create a new client */
+        var clientPayload = _fixture.Build<ClientCreationScheme>()
+            .With(client => client.Name, $"test-client-{Guid.NewGuid()}")
+            .With(client => client.Flows, [Grant.ClientCredentials])
+            .With(client => client.RedirectUris, [])
+            .Create();
+
+        var clientResponse = await httpClient.PostAsJsonAsync("api/v1/clients", clientPayload);
+
+        Assert.Equal(HttpStatusCode.Created, clientResponse.StatusCode);
+
+        var clientFilters = ClientFilters.WithSpecifications()
+            .WithName(clientPayload.Name)
+            .Build();
+
+        var clients = await clientCollection.GetClientsAsync(clientFilters, CancellationToken.None);
+        var client = clients.FirstOrDefault();
+
+        Assert.NotEmpty(clients);
+        Assert.NotNull(client);
+
+        /* arrange: assign two audiences */
+        var audience1 = "https://api1.example.com";
+        var audience2 = "https://api2.example.com";
+
+        var audience1Payload = new AssignClientAudienceScheme { Value = audience1 };
+        var audience2Payload = new AssignClientAudienceScheme { Value = audience2 };
+
+        await httpClient.PostAsJsonAsync($"api/v1/clients/{client.Id}/audiences", audience1Payload);
+        await httpClient.PostAsJsonAsync($"api/v1/clients/{client.Id}/audiences", audience2Payload);
+
+        /* act: send DELETE request to revoke first audience */
+        var response = await httpClient.DeleteAsync($"api/v1/clients/{client.Id}/audiences/{Uri.EscapeDataString(audience1)}");
+        var remainingAudiences = await response.Content.ReadFromJsonAsync<IReadOnlyCollection<string>>();
+
+        /* assert: response should be 200 OK */
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(remainingAudiences);
+
+        /* assert: only second audience should remain */
+        Assert.Single(remainingAudiences);
+        Assert.Contains(audience2, remainingAudiences);
+        Assert.DoesNotContain(audience1, remainingAudiences);
+    }
+
+    [Fact(DisplayName = "[e2e] - when DELETE /clients/{id}/audiences/{audience} with non-existent client should return 404 #ERROR-2D943")]
+    public async Task WhenDeleteClientAudienceWithNonExistentClient_ShouldReturnNotFound()
+    {
+        /* arrange: authenticate user and get access token */
+        var httpClient = factory.HttpClient.WithRealmHeader("master");
+        var credentials = new AuthenticationCredentials
+        {
+            Username = "federation.testing.user",
+            Password = "federation.testing.password"
+        };
+
+        var authenticationResponse = await httpClient.PostAsJsonAsync("api/v1/identity/authenticate", credentials);
+        var authenticationResult = await authenticationResponse.Content.ReadFromJsonAsync<AuthenticationResult>();
+
+        Assert.NotNull(authenticationResult);
+        Assert.NotEmpty(authenticationResult.AccessToken);
+
+        httpClient.WithAuthorization(authenticationResult.AccessToken);
+
+        /* arrange: prepare request with non-existent client ID */
+        var nonExistentClientId = Guid.NewGuid().ToString();
+        var audience = "https://api.example.com";
+
+        /* act: send DELETE request for non-existent client */
+        var response = await httpClient.DeleteAsync($"api/v1/clients/{nonExistentClientId}/audiences/{Uri.EscapeDataString(audience)}");
+        var error = await response.Content.ReadFromJsonAsync<Error>();
+
+        /* assert: response should be 404 Not Found */
+        Assert.NotNull(error);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal(ClientErrors.ClientDoesNotExist, error);
+    }
+
+    [Fact(DisplayName = "[e2e] - when DELETE /clients/{id}/audiences/{audience} with audience not assigned should return 409 #ERROR-B3F8E")]
+    public async Task WhenDeleteClientAudienceWithAudienceNotAssigned_ShouldReturnConflict()
+    {
+        /* arrange: resolve required dependencies */
+        var clientCollection = factory.Services.GetRequiredService<IClientCollection>();
+
+        /* arrange: authenticate user and get access token */
+        var httpClient = factory.HttpClient.WithRealmHeader("master");
+        var credentials = new AuthenticationCredentials
+        {
+            Username = "federation.testing.user",
+            Password = "federation.testing.password"
+        };
+
+        var authenticationResponse = await httpClient.PostAsJsonAsync("api/v1/identity/authenticate", credentials);
+        var authenticationResult = await authenticationResponse.Content.ReadFromJsonAsync<AuthenticationResult>();
+
+        Assert.NotNull(authenticationResult);
+        Assert.NotEmpty(authenticationResult.AccessToken);
+
+        httpClient.WithAuthorization(authenticationResult.AccessToken);
+
+        /* arrange: create a new client */
+        var clientPayload = _fixture.Build<ClientCreationScheme>()
+            .With(client => client.Name, $"test-client-{Guid.NewGuid()}")
+            .With(client => client.Flows, [Grant.ClientCredentials])
+            .With(client => client.RedirectUris, [])
+            .Create();
+
+        var clientResponse = await httpClient.PostAsJsonAsync("api/v1/clients", clientPayload);
+
+        Assert.Equal(HttpStatusCode.Created, clientResponse.StatusCode);
+
+        var clientFilters = ClientFilters.WithSpecifications()
+            .WithName(clientPayload.Name)
+            .Build();
+
+        var clients = await clientCollection.GetClientsAsync(clientFilters, CancellationToken.None);
+        var client = clients.FirstOrDefault();
+
+        Assert.NotEmpty(clients);
+        Assert.NotNull(client);
+
+        /* arrange: assign one audience */
+        var assignedAudience = "https://api1.example.com";
+        var assignPayload = new AssignClientAudienceScheme { Value = assignedAudience };
+
+        await httpClient.PostAsJsonAsync($"api/v1/clients/{client.Id}/audiences", assignPayload);
+
+        /* act: send DELETE request for non-assigned audience */
+        var nonAssignedAudience = "https://api2.example.com";
+
+        var response = await httpClient.DeleteAsync($"api/v1/clients/{client.Id}/audiences/{Uri.EscapeDataString(nonAssignedAudience)}");
+        var error = await response.Content.ReadFromJsonAsync<Error>();
+
+        /* assert: response should be 409 Conflict */
+        Assert.NotNull(error);
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        Assert.Equal(ClientErrors.AudienceNotAssigned, error);
+    }
 }
