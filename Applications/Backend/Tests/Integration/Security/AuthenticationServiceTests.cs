@@ -26,17 +26,20 @@ public sealed class AuthenticationServiceTests :
         _passwordHasher = new PasswordHasher();
 
         var tokenCollection = new TokenCollection(_database, _realmProvider.Object);
+        var realm = _fixture.Create<Realm>();
         var secret = new Secret
         {
+            Id = Identifier.Generate<Secret>(),
+            RealmId = realm.Id,
             PrivateKey = Convert.ToBase64String(_rsa.ExportRSAPrivateKey()),
-            PublicKey = Convert.ToBase64String(_rsa.ExportRSAPublicKey())
+            PublicKey = Convert.ToBase64String(_rsa.ExportRSAPublicKey()),
+            CreatedAt = DateTime.UtcNow,
+            ExpiresAt = DateTime.UtcNow.AddDays(30)
         };
 
-        var realm = _fixture.Create<Realm>();
-
         _secretCollection
-            .Setup(collection => collection.GetSecretAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(secret);
+            .Setup(collection => collection.GetSecretsAsync(It.IsAny<SecretFilters>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([secret]);
 
         _groupCollection
             .Setup(collection => collection.GetGroupsAsync(It.IsAny<GroupFilters>(), It.IsAny<CancellationToken>()))
