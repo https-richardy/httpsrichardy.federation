@@ -44,6 +44,7 @@ global using HttpsRichardy.Federation.WebApi.Middlewares;
 global using HttpsRichardy.Federation.WebApi.Attributes;
 global using HttpsRichardy.Federation.WebApi.Binders;
 global using HttpsRichardy.Federation.WebApi.Providers;
+global using HttpsRichardy.Federation.WebApi.Workers;
 global using HttpsRichardy.Federation.WebApi.Constants;
 global using HttpsRichardy.Federation.WebApi.Conventions;
 
