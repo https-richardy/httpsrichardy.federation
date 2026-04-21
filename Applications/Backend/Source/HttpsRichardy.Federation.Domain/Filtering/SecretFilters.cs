@@ -7,4 +7,7 @@ public sealed class SecretFilters : Filters
     public bool? InGracePeriod { get; set; }
     public bool? IsExpired { get; set; }
     public DateTime? Now { get; set; }
+
+    public static SecretFilters WithoutFilters => new();
+    public static SecretFiltersBuilder WithSpecifications() => new();
 }
