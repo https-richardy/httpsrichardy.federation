@@ -6,4 +6,5 @@ public sealed record FederationOptions
     public string ClientSecret { get; set; } = default!;
     public string Realm { get; set; } = default!;
     public string Authority { get; set; } = default!;
+    public string[] Audiences { get; set; } = [];
 }
