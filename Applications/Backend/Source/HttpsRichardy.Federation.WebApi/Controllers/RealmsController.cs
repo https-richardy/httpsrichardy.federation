@@ -72,6 +72,23 @@ public sealed class RealmsController(IDispatcher dispatcher) : ControllerBase
         };
     }
 
+    [HttpGet("{id}/secrets")]
+    [Authorize(Roles = Permissions.ViewRealms)]
+    [Stability(Stability.Stable)]
+    public async Task<IActionResult> GetRealmSecretsAsync([FromRoute] string id, [FromQuery] FetchRealmSecretsParameters request, CancellationToken cancellation)
+    {
+        var result = await dispatcher.DispatchAsync(request with { RealmId = id }, cancellation);
+
+        return result switch
+        {
+            { IsSuccess: true } when result.Data is not null =>
+                StatusCode(StatusCodes.Status200OK, result.Data),
+
+            { IsFailure: true } when result.Error == RealmErrors.RealmDoesNotExist =>
+                StatusCode(StatusCodes.Status404NotFound, result.Error),
+        };
+    }
+
     [HttpGet("{id}/permissions")]
     [Authorize(Roles = Permissions.ViewPermissions)]
     [Stability(Stability.Stable)]

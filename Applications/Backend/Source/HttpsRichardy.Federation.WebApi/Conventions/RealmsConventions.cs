@@ -24,6 +24,11 @@ public static class RealmsConventions
     public static void DeleteRealmAsync(string id, CancellationToken cancellation) { }
 
     [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Prefix)]
+    [ProducesResponseType(typeof(IReadOnlyCollection<SecretScheme>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Error), StatusCodes.Status404NotFound)]
+    public static void GetRealmSecretsAsync(string id, FetchRealmSecretsParameters request, CancellationToken cancellation) { }
+
+    [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Prefix)]
     [ProducesResponseType(typeof(IReadOnlyCollection<PermissionDetailsScheme>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Error), StatusCodes.Status404NotFound)]
     public static void GetRealmPermissionsAsync(string id, ListRealmAssignedPermissionsParameters request, CancellationToken cancellation) { }
