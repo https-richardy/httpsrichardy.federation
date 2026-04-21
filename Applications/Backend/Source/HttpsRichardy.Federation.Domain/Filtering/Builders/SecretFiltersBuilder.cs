@@ -14,7 +14,7 @@ public sealed class SecretFiltersBuilder :
     public SecretFiltersBuilder WithCanSign(DateTime? now = null)
     {
         _filters.CanSign = true;
-        _filters.Now = now ?? DateTime.UtcNow;
+        _filters.Now = now;
 
         return this;
     }
@@ -22,7 +22,7 @@ public sealed class SecretFiltersBuilder :
     public SecretFiltersBuilder WithInGrace(DateTime? now = null)
     {
         _filters.InGracePeriod = true;
-        _filters.Now = now ?? DateTime.UtcNow;
+        _filters.Now = now;
 
         return this;
     }
@@ -30,7 +30,7 @@ public sealed class SecretFiltersBuilder :
     public SecretFiltersBuilder WithExpired(DateTime? now = null)
     {
         _filters.IsExpired = true;
-        _filters.Now = now ?? DateTime.UtcNow;
+        _filters.Now = now;
 
         return this;
     }
