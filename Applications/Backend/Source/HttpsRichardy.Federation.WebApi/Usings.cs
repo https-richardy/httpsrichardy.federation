@@ -30,6 +30,7 @@ global using HttpsRichardy.Federation.Application.Payloads.Identity;
 global using HttpsRichardy.Federation.Application.Payloads.Authorization;
 global using HttpsRichardy.Federation.Application.Payloads.Permission;
 global using HttpsRichardy.Federation.Application.Payloads.Realm;
+global using HttpsRichardy.Federation.Application.Payloads.Secret;
 global using HttpsRichardy.Federation.Application.Payloads.User;
 global using HttpsRichardy.Federation.Application.Payloads.Connect;
 global using HttpsRichardy.Federation.Application.Payloads.Client;
