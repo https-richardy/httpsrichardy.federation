@@ -29,6 +29,11 @@ public static class RealmsConventions
     public static void GetRealmSecretsAsync(string id, FetchRealmSecretsParameters request, CancellationToken cancellation) { }
 
     [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Prefix)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(Error), StatusCodes.Status404NotFound)]
+    public static void RotateRealmSecretsAsync(string id, CancellationToken cancellation) { }
+
+    [ApiConventionNameMatch(ApiConventionNameMatchBehavior.Prefix)]
     [ProducesResponseType(typeof(IReadOnlyCollection<PermissionDetailsScheme>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Error), StatusCodes.Status404NotFound)]
     public static void GetRealmPermissionsAsync(string id, ListRealmAssignedPermissionsParameters request, CancellationToken cancellation) { }
