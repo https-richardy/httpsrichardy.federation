@@ -14,6 +14,7 @@ public static class WebInfrastructureExtension
         services.AddProviders();
         services.AddOpenApiSpecification();
         services.AddRazorPages();
+        services.AddWorkers();
         services.AddFluentValidationAutoValidation(options =>
         {
             options.DisableDataAnnotationsValidation = true;
