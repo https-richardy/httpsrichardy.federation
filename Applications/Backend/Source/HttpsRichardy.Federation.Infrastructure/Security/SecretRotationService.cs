@@ -55,6 +55,20 @@ public sealed class SecretRotationService(ISecretCollection secretCollection) : 
         }
     }
 
+    public async Task PruneSecretsAsync(Realm realm, CancellationToken cancellation = default)
+    {
+        var filters = SecretFilters.WithSpecifications()
+            .WithRealm(realm.Id)
+            .Build();
+
+        var secrets = await secretCollection.GetSecretsAsync(filters, cancellation);
+
+        foreach (var secret in secrets)
+        {
+            await DeleteSecretAsync(realm, secret, cancellation);
+        }
+    }
+
     public async Task RotateSecretAsync(Realm realm, CancellationToken cancellation = default)
     {
         var now = DateTime.UtcNow;
@@ -68,14 +82,19 @@ public sealed class SecretRotationService(ISecretCollection secretCollection) : 
             .OrderByDescending(secret => secret.CreatedAt)
             .FirstOrDefault();
 
-        if (current is not null)
+        if (current is null)
         {
-            current.ExpiresAt = now;
-            current.GracePeriodEndsAt = now.Add(_gracePeriod);
-
-            await secretCollection.UpdateAsync(current, cancellation: cancellation);
+            await CreateSecretAsync(realm, cancellation);
+            return;
         }
 
+        if (current.ExpiresAt is not null && current.ExpiresAt > now)
+            return;
+
+        current.ExpiresAt = now;
+        current.GracePeriodEndsAt = now.Add(_gracePeriod);
+
+        await secretCollection.UpdateAsync(current, cancellation: cancellation);
         await CreateSecretAsync(realm, cancellation);
     }
 }

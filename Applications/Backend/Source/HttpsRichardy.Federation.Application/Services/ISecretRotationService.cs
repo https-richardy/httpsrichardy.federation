@@ -7,6 +7,11 @@ public interface ISecretRotationService
         CancellationToken cancellation = default
     );
 
+    public Task PruneSecretsAsync(
+        Realm realm,
+        CancellationToken cancellation = default
+    );
+
     public Task CreateSecretAsync(
         Realm realm,
         CancellationToken cancellation = default
