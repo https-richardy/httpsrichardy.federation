@@ -3,7 +3,7 @@
 public sealed class SecretFiltersBuilder :
     FiltersBuilderBase<SecretFilters, SecretFiltersBuilder>
 {
-    public SecretFiltersBuilder ForRealm(string? realmId)
+    public SecretFiltersBuilder WithRealm(string? realmId)
     {
         if (!string.IsNullOrWhiteSpace(realmId))
             _filters.RealmId = realmId;
