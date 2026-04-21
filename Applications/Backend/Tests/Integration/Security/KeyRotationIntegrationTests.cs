@@ -1,5 +1,3 @@
-using System.Text.Json;
-
 namespace HttpsRichardy.Federation.TestSuite.Integration.Security;
 
 public sealed class KeyRotationIntegrationTests(IntegrationEnvironmentFixture factory) :
