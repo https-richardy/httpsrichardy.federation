@@ -23,7 +23,9 @@ public sealed class FetchRealmSecretsHandler(ISecretCollection collection, IReal
             .Build();
 
         var secrets = await collection.GetSecretsAsync(filters, cancellation);
-        var schemes = secrets.Select(secret => secret.AsResponse())
+        var schemes = secrets
+            .OrderByDescending(secret => secret.CreatedAt)
+            .Select(secret => secret.AsResponse())
             .ToList()
             .AsReadOnly();
 
