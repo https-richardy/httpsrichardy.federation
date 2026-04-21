@@ -1,3 +1,9 @@
+# 4.0.0 - 2026-04-20
+
+this release introduces full multi-client support per realm. In previous versions, a realm (tenant) was effectively treated as a single client, but starting in 4.0.0 each realm can manage multiple clients with their own credentials, permissions, flows, redirect uris, and audiences. We also added dedicated client management capabilities and support for multiple token audiences during issuance and validation.
+
+this is a breaking change for users upgrading from 3.1.1 and earlier, because integrations that assumed a 1:1 mapping between realm and client must now be updated to work with explicit clients and their configured audiences.
+
 # 3.1.1 - 2026-03-30
 
 this release includes internal improvements and performance optimizations to enhance the overall system efficiency. We removed unused experimental scope-related code that is no longer required and introduced new database indexes to improve query performance. These changes help ensure faster and more reliable data access while maintaining existing functionality without breaking changes.
