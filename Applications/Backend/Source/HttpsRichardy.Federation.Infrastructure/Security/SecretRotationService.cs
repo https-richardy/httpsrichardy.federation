@@ -88,9 +88,6 @@ public sealed class SecretRotationService(ISecretCollection secretCollection) : 
             return;
         }
 
-        if (current.ExpiresAt is not null && current.ExpiresAt > now)
-            return;
-
         current.ExpiresAt = now;
         current.GracePeriodEndsAt = now.Add(_gracePeriod);
 
