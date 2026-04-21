@@ -15,11 +15,11 @@ public static class JsonWebKeysMapper
         };
     }
 
-    public static JsonWebKeySetScheme AsJsonWebKeySetScheme(Secret secret)
+    public static JsonWebKeySetScheme AsJsonWebKeySetScheme(IReadOnlyCollection<Secret> secrets)
     {
         return new JsonWebKeySetScheme
         {
-            Keys = [JsonWebKeysMapper.AsJsonWebKeys(secret)]
+            Keys = [.. secrets.Select(secret => JsonWebKeysMapper.AsJsonWebKeys(secret))]
         };
     }
 }
