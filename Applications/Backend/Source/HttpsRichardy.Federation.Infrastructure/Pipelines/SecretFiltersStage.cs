@@ -22,7 +22,22 @@ public static class SecretFiltersStage
             ));
         }
 
-        // a secret is in the grace period if it has already expired for signing and its grace period has not ended yet.
+        if (filters.CanValidate is true)
+        {
+            var canSign = Builders<BsonDocument>.Filter.Or(
+                Builders<BsonDocument>.Filter.Eq(Documents.Secret.ExpiresAt, BsonNull.Value),
+                Builders<BsonDocument>.Filter.Gt(Documents.Secret.ExpiresAt, now)
+            );
+
+            var inGrace = Builders<BsonDocument>.Filter.And(
+                Builders<BsonDocument>.Filter.Ne(Documents.Secret.ExpiresAt, BsonNull.Value),
+                Builders<BsonDocument>.Filter.Lte(Documents.Secret.ExpiresAt, now),
+                Builders<BsonDocument>.Filter.Ne(Documents.Secret.GracePeriodEndsAt, BsonNull.Value),
+                Builders<BsonDocument>.Filter.Gt(Documents.Secret.GracePeriodEndsAt, now)
+            );
+
+            definitions.Add(Builders<BsonDocument>.Filter.Or(canSign, inGrace));
+        }
 
         if (filters.InGracePeriod is true)
         {

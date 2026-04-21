@@ -19,6 +19,14 @@ public sealed class SecretFiltersBuilder :
         return this;
     }
 
+    public SecretFiltersBuilder WithCanValidate(DateTime? now = null)
+    {
+        _filters.CanValidate = true;
+        _filters.Now = now;
+
+        return this;
+    }
+
     public SecretFiltersBuilder WithInGrace(DateTime? now = null)
     {
         _filters.InGracePeriod = true;
