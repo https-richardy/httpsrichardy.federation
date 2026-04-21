@@ -1,6 +1,9 @@
 namespace HttpsRichardy.Federation.Application.Handlers.Realm;
 
-public sealed class RealmCreationHandler(IRealmCollection collection, IClientCredentialsGenerator credentialsGenerator) :
+public sealed class RealmCreationHandler(
+    IRealmCollection collection,
+    IClientCredentialsGenerator credentialsGenerator,
+    ISecretRotationService secretRotationService) :
     IDispatchHandler<RealmCreationScheme, Result<RealmDetailsScheme>>
 {
     public async Task<Result<RealmDetailsScheme>> HandleAsync(
@@ -31,6 +34,7 @@ public sealed class RealmCreationHandler(IRealmCollection collection, IClientCre
             .ToList();
 
         await collection.InsertAsync(realm, cancellation: cancellation);
+        await secretRotationService.EnsureSecretExistsAsync(realm, cancellation);
 
         return Result<RealmDetailsScheme>.Success(RealmMapper.AsResponse(realm));
     }
