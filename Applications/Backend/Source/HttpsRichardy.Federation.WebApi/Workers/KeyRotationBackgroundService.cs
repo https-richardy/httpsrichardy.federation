@@ -1,12 +1,12 @@
 namespace HttpsRichardy.Federation.WebApi.Workers;
 
-public sealed class KeyRotationBackgroundService(IServiceScopeFactory _scopeFactory, ILogger<KeyRotationBackgroundService> logger) : BackgroundService
+public sealed class KeyRotationBackgroundService(IServiceScopeFactory scopeFactory, ILogger<KeyRotationBackgroundService> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            using var scope = _scopeFactory.CreateScope();
+            using var scope = scopeFactory.CreateScope();
 
             var rotationService = scope.ServiceProvider.GetRequiredService<ISecretRotationService>();
             var realmCollection = scope.ServiceProvider.GetRequiredService<IRealmCollection>();
