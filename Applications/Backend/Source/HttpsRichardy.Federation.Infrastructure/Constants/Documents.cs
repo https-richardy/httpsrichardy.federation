@@ -43,6 +43,14 @@ public static class Documents
         public const string Id = "_id";
     }
 
+    public static class Secret
+    {
+        public const string RealmId = nameof(Domain.Aggregates.Secret.RealmId);
+        public const string ExpiresAt = nameof(Domain.Aggregates.Secret.ExpiresAt);
+        public const string GracePeriodEndsAt = nameof(Domain.Aggregates.Secret.GracePeriodEndsAt);
+        public const string Id = "_id";
+    }
+
     public static class SecurityToken
     {
         public const string Value = nameof(Domain.Aggregates.SecurityToken.Value);
