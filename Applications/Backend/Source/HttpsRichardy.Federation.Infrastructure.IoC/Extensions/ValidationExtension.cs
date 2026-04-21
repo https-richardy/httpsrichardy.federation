@@ -20,6 +20,9 @@ public static class ValidationExtension
         services.AddTransient<IValidator<RealmCreationScheme>, RealmCreationValidator>();
         services.AddTransient<IValidator<RealmUpdateScheme>, RealmUpdateValidator>();
 
+        services.AddTransient<IValidator<ClientCreationScheme>, ClientCreationSchemeValidator>();
+        services.AddTransient<IValidator<AssignClientPermissionScheme>, AssignClientPermissionValidator>();
+
         services.AddTransient<IValidator<AssignUserPermissionScheme>, AssignUserPermissionValidator>();
         services.AddTransient<IValidator<AssignRealmPermissionScheme>, AssignRealmPermissionValidator>();
     }

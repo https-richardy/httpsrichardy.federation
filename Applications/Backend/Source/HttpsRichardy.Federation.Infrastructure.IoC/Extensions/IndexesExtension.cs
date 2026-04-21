@@ -13,6 +13,7 @@ public static class IndexesExtension
 
         var tokenCollection =       database.GetCollection<SecurityToken>("federation.tokens");
         var realmCollection =       database.GetCollection<Realm>("federation.realms");
+        var clientCollection =      database.GetCollection<Client>("federation.clients");
 
         var userIndexes = new[]
         {
@@ -52,8 +53,16 @@ public static class IndexesExtension
 
         var realmIndexes = new[]
         {
-            new CreateIndexModel<Realm>(Builders<Realm>.IndexKeys.Ascending(realm => realm.Name)),
-            new CreateIndexModel<Realm>(Builders<Realm>.IndexKeys.Ascending(realm => realm.ClientId))
+            new CreateIndexModel<Realm>(Builders<Realm>.IndexKeys.Ascending(realm => realm.Name))
+        };
+
+        var clientIndexes = new[]
+        {
+            new CreateIndexModel<Client>(Builders<Client>.IndexKeys.Ascending(client => client.RealmId)),
+            new CreateIndexModel<Client>(Builders<Client>.IndexKeys.Ascending(client => client.ClientId)),
+            new CreateIndexModel<Client>(Builders<Client>.IndexKeys
+                .Ascending(client => client.RealmId)
+                .Ascending(client => client.ClientId))
         };
 
         userCollection.Indexes.CreateMany(userIndexes);
@@ -61,5 +70,6 @@ public static class IndexesExtension
         groupCollection.Indexes.CreateMany(groupIndexes);
         tokenCollection.Indexes.CreateMany(tokenIndexes);
         realmCollection.Indexes.CreateMany(realmIndexes);
+        clientCollection.Indexes.CreateMany(clientIndexes);
     }
 }

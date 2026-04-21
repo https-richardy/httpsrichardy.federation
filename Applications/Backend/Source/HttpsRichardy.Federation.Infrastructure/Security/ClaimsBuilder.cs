@@ -23,12 +23,6 @@ public sealed class ClaimsBuilder
         return this;
     }
 
-    public ClaimsBuilder WithRealmId(string realmId)
-    {
-        _claims.Add(new Claim(IdentityClaimNames.RealmId, realmId));
-        return this;
-    }
-
     public ClaimsBuilder WithRealmName(string realmName)
     {
         _claims.Add(new Claim(IdentityClaimNames.Realm, realmName));
@@ -40,6 +34,16 @@ public sealed class ClaimsBuilder
         foreach (var permission in permissions)
         {
             _claims.Add(new Claim(ClaimTypes.Role, permission.Name));
+        }
+
+        return this;
+    }
+
+    public ClaimsBuilder WithAudiences(IEnumerable<string> audiences)
+    {
+        foreach (var audience in audiences)
+        {
+            _claims.Add(new Claim(JwtRegisteredClaimNames.Aud, audience));
         }
 
         return this;

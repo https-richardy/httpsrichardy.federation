@@ -30,8 +30,16 @@ public static class Documents
     public static class Realm
     {
         public const string Name = nameof(Domain.Aggregates.Realm.Name);
-        public const string ClientId = nameof(Domain.Aggregates.Realm.ClientId);
         public const string IsDeleted = nameof(Domain.Aggregates.Realm.IsDeleted);
+        public const string Id = "_id";
+    }
+
+    public static class Client
+    {
+        public const string Name = nameof(Domain.Aggregates.Client.Name);
+        public const string RealmId = nameof(Domain.Aggregates.Client.RealmId);
+        public const string ClientId = nameof(Domain.Aggregates.Client.ClientId);
+        public const string IsDeleted = nameof(Domain.Aggregates.Client.IsDeleted);
         public const string Id = "_id";
     }
 

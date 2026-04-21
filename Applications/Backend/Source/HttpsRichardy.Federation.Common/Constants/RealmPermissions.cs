@@ -42,6 +42,11 @@ public static class RealmPermissions
         Permissions.CreateRealm,
         Permissions.DeleteRealm,
         Permissions.EditRealm,
-        Permissions.ViewRealms
+        Permissions.ViewRealms,
+
+        Permissions.CreateClient,
+        Permissions.DeleteClient,
+        Permissions.EditClient,
+        Permissions.ViewClients
     ];
 }

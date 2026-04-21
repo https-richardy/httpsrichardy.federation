@@ -65,14 +65,17 @@ public sealed class JwtSecurityTokenService(
         return Result<SecurityToken>.Success(securityToken);
     }
 
-    public async Task<Result<SecurityToken>> GenerateAccessTokenAsync(Realm realm, CancellationToken cancellation = default)
+    public async Task<Result<SecurityToken>> GenerateAccessTokenAsync(Client client, CancellationToken cancellation = default)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
+        var realm = realmProvider.GetCurrentRealm();
+
         var claims = new ClaimsBuilder()
-            .WithRealmId(realm.Id.ToString())
+            .WithSubject(client.Id)
             .WithRealmName(realm.Name)
-            .WithClientId(realm.ClientId)
-            .WithPermissions(realm.Permissions)
+            .WithClientId(client.Id)
+            .WithPermissions(client.Permissions)
+            .WithAudiences(client.Audiences.Select(audience => audience.Value))
             .Build();
 
         var privateKey = await GetPrivateKeyAsync(cancellation);
@@ -82,7 +85,7 @@ public sealed class JwtSecurityTokenService(
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Issuer = host.Address.ToString().TrimEnd('/'),
-            Audience = realm.Name,
+            Audience = client.Name,
             Subject = claimsIdentity,
             SigningCredentials = credentials,
             NotBefore = DateTime.UtcNow.AddSeconds(-30),

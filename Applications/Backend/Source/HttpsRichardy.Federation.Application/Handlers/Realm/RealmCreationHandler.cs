@@ -17,11 +17,7 @@ public sealed class RealmCreationHandler(IRealmCollection collection, IClientCre
         }
 
         var credentials = await credentialsGenerator.GenerateAsync(parameters.Name, cancellation: cancellation);
-        var realm = RealmMapper.AsRealm(
-            realm: parameters,
-            clientId: credentials.ClientId,
-            secretHash: credentials.ClientSecret
-        );
+        var realm = RealmMapper.AsRealm(parameters);
 
         var masterFilters = RealmFilters.WithSpecifications()
             .WithName("master")

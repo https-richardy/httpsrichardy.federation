@@ -20,6 +20,7 @@ public static class DataPersistenceExtension
         services.AddTransient<IGroupCollection, GroupCollection>();
         services.AddTransient<ITokenCollection, TokenCollection>();
         services.AddTransient<IRealmCollection, RealmCollection>();
+        services.AddTransient<IClientCollection, ClientCollection>();
         services.AddTransient<ISecretCollection, SecretCollection>();
     }
 }

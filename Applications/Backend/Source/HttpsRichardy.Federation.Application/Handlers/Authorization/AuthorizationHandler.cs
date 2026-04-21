@@ -1,16 +1,16 @@
 ﻿namespace HttpsRichardy.Federation.Application.Handlers.Authorization;
 
-public sealed class AuthorizationHandler(IRealmCollection realmCollection, IRedirectUriPolicy redirectUriPolicy) :
+public sealed class AuthorizationHandler(IClientCollection clientCollection, IRedirectUriPolicy redirectUriPolicy) :
     IDispatchHandler<AuthorizationParameters, Result<AuthorizationScheme>>
 {
     public async Task<Result<AuthorizationScheme>> HandleAsync(
         AuthorizationParameters parameters, CancellationToken cancellation = default)
     {
-        var filters = new RealmFiltersBuilder()
-            .WithClientId(parameters.ClientId)
+        var filters = ClientFilters.WithSpecifications()
+            .WithIdentifier(parameters.ClientId)
             .Build();
 
-        var clients = await realmCollection.GetRealmsAsync(filters, cancellation);
+        var clients = await clientCollection.GetClientsAsync(filters, cancellation);
         var client = clients.FirstOrDefault();
 
         if (client is null)

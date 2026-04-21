@@ -1,5 +1,3 @@
-#pragma warning disable S1118
-
 namespace HttpsRichardy.Federation.WebApi;
 
 public partial class Program

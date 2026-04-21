@@ -17,6 +17,7 @@ global using HttpsRichardy.Internal.Essentials.Utilities;
 global using HttpsRichardy.Federation.Domain.Aggregates;
 global using HttpsRichardy.Federation.Domain.Filtering;
 global using HttpsRichardy.Federation.Domain.Collections;
+global using HttpsRichardy.Federation.Domain.Concepts;
 global using HttpsRichardy.Federation.Common.Constants;
 
 global using HttpsRichardy.Federation.Application.Services;
@@ -29,6 +30,7 @@ global using HttpsRichardy.Federation.Application.Payloads.Permission;
 global using HttpsRichardy.Federation.Application.Payloads.Group;
 global using HttpsRichardy.Federation.Application.Payloads.Common;
 global using HttpsRichardy.Federation.Application.Payloads.Connect;
+global using HttpsRichardy.Federation.Application.Payloads.Client;
 
 global using HttpsRichardy.Federation.Infrastructure.Persistence;
 global using HttpsRichardy.Federation.Infrastructure.Security;

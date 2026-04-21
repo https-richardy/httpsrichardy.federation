@@ -4,11 +4,11 @@ global using System.Net.Http.Headers;
 global using System.Net.Http.Json;
 global using System.Reflection;
 
+global using Microsoft.IdentityModel.Tokens;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 global using HttpsRichardy.Internal.Essentials.Patterns;
-
 global using HttpsRichardy.Federation.Sdk.Serializers;
 global using HttpsRichardy.Federation.Sdk.Helpers;
 global using HttpsRichardy.Federation.Sdk.Clients;

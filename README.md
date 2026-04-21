@@ -53,6 +53,7 @@ services.AddFederation(options =>
     options.Realm = settings.Federation.Realm;               // e.g., "acme-corp"
     options.ClientId = settings.Federation.ClientId;         // e.g., "client-id-generated"
     options.ClientSecret = settings.Federation.ClientSecret; // e.g., "secret-key-generated"
+    options.Audiences = settings.Federation.Audiences        // e.g., "[ "acme-corp-operations", "acme-corp-backoffice" ]"
 });
 ```
 
@@ -64,7 +65,7 @@ You can pull either:
 
 ```bash
 docker pull httpsrichardy/federation:latest
-docker pull httprichardy/federation:3.0.0
+docker pull httpsrichardy/federation:4.0.0
 ```
 
 To run the container, provide the required environment variables for database and administration bootstrap:

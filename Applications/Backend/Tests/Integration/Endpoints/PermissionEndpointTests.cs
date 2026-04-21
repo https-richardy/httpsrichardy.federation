@@ -133,7 +133,7 @@ public sealed class PermissionEndpointTests(IntegrationEnvironmentFixture factor
 
         /* arrange: create a new realm */
         var realmPayload = _fixture.Build<RealmCreationScheme>()
-            .With(realm => realm.Name, $"test-realm-{Guid.NewGuid()}")
+            .With(realm => realm.Name, $"realm-{Guid.NewGuid()}")
             .Create();
 
         var realmResponse = await masterClient.PostAsJsonAsync("api/v1/realms", realmPayload);
@@ -142,42 +142,22 @@ public sealed class PermissionEndpointTests(IntegrationEnvironmentFixture factor
         Assert.NotNull(realm);
         Assert.Equal(HttpStatusCode.Created, realmResponse.StatusCode);
 
-        /* arrange: authenticate realm via OAuth 2.0 client_credentials */
-        var oauthCredentials = new Dictionary<string, string>
-        {
-            { "grant_type", "client_credentials" },
-            { "client_id", realm.ClientId },
-            { "client_secret", realm.ClientSecret }
-        };
-
-        var oauthContent = new FormUrlEncodedContent(oauthCredentials);
-        var connectClient = factory.HttpClient;
-
-        var oauthResponse = await connectClient.PostAsync("api/v1/protocol/open-id/connect/token", oauthContent);
-        var oauthResult = await oauthResponse.Content.ReadFromJsonAsync<ClientAuthenticationResult>();
-
-        Assert.Equal(HttpStatusCode.OK, oauthResponse.StatusCode);
-
-        Assert.NotNull(oauthResult);
-        Assert.NotEmpty(oauthResult.AccessToken);
-
-        var realmClient = factory.HttpClient.WithRealmHeader(realm.Name);
-
-        realmClient.WithAuthorization(oauthResult.AccessToken);
+        /* arrange: use an authenticated identity in the target realm */
+        var realmClient = factory.HttpClient.WithRealmHeader(realm.Name)
+            .WithAuthorization(masterAuthenticationResult.AccessToken);
 
         /* act: attempt to create a permission using a reserved system name */
-        var payload = _fixture.Build<PermissionCreationScheme>()
-            .With(permission => permission.Name, Permissions.ViewRealms)
-            .Create();
+        var payload = new PermissionCreationScheme
+        {
+            Name = Permissions.ViewRealms
+        };
 
         var response = await realmClient.PostAsJsonAsync("api/v1/permissions", payload);
-
-        /* assert: response should be 409 Conflict */
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-
         var error = await response.Content.ReadFromJsonAsync<Error>();
 
+        /* assert: response should be 409 Conflict */
         Assert.NotNull(error);
+
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         Assert.Equal(PermissionErrors.PermissionNameIsReserved, error);
     }
