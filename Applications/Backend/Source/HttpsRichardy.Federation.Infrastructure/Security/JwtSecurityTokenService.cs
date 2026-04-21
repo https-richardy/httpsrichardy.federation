@@ -148,14 +148,14 @@ public sealed class JwtSecurityTokenService(
     public async Task<Result> ValidateTokenAsync(SecurityToken token)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var publicKey = await GetPublicKeyAsync();
+        var publicKeys = await GetPublicKeyAsync();
 
         var validationParameters = new TokenValidationParameters
         {
             ValidateIssuer = false,
             ValidateAudience = false,
             ValidateLifetime = true,
-            IssuerSigningKey = publicKey,
+            IssuerSigningKeys = publicKeys,
             ValidateIssuerSigningKey = true,
             ClockSkew = TimeSpan.FromSeconds(30)
         };
@@ -214,13 +214,41 @@ public sealed class JwtSecurityTokenService(
 
     private async Task<RsaSecurityKey> GetPrivateKeyAsync(CancellationToken cancellation = default)
     {
-        var secret = await secretCollection.GetSecretAsync(cancellation);
-        return Common.Utilities.RsaHelper.CreateSecurityKeyFromPrivateKey(secret.PrivateKey);
+        var realm = realmProvider.GetCurrentRealm();
+        var filters = SecretFilters.WithSpecifications()
+            .WithRealm(realm.Id)
+            .WithCanSign()
+            .Build();
+
+        var secrets = await secretCollection.GetSecretsAsync(filters, cancellation);
+        var secret = secrets
+            .OrderByDescending(secret => secret.CreatedAt)
+            .First();
+
+        var key = Common.Utilities.RsaHelper.CreateSecurityKeyFromPrivateKey(secret.PrivateKey);
+
+        key.KeyId = secret.Id;
+
+        return key;
     }
 
-    private async Task<RsaSecurityKey> GetPublicKeyAsync(CancellationToken cancellation = default)
+    private async Task<IReadOnlyCollection<RsaSecurityKey>> GetPublicKeyAsync(CancellationToken cancellation = default)
     {
-        var secret = await secretCollection.GetSecretAsync(cancellation);
-        return Common.Utilities.RsaHelper.CreateSecurityKeyFromPublicKey(secret.PublicKey);
+        var realm = realmProvider.GetCurrentRealm();
+        var filters = SecretFilters.WithSpecifications()
+            .WithRealm(realm.Id)
+            .WithCanValidate()
+            .Build();
+
+        var secrets = await secretCollection.GetSecretsAsync(filters, cancellation);
+
+        return [.. secrets.Select(secret =>
+        {
+            var key = Common.Utilities.RsaHelper.CreateSecurityKeyFromPublicKey(secret.PublicKey);
+
+            key.KeyId = secret.Id;
+
+            return key;
+        })];
     }
 }
