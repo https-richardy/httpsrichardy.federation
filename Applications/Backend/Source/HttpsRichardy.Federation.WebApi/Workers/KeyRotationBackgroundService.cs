@@ -2,6 +2,8 @@ namespace HttpsRichardy.Federation.WebApi.Workers;
 
 public sealed class KeyRotationBackgroundService(IServiceScopeFactory scopeFactory, ILogger<KeyRotationBackgroundService> logger) : BackgroundService
 {
+    private static readonly TimeSpan _rotationInterval = TimeSpan.FromHours(24);
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
@@ -10,6 +12,7 @@ public sealed class KeyRotationBackgroundService(IServiceScopeFactory scopeFacto
 
             var rotationService = scope.ServiceProvider.GetRequiredService<ISecretRotationService>();
             var realmCollection = scope.ServiceProvider.GetRequiredService<IRealmCollection>();
+            var secretCollection = scope.ServiceProvider.GetRequiredService<ISecretCollection>();
 
             var realms = await realmCollection.GetRealmsAsync(RealmFilters.WithoutFilters, stoppingToken);
 
@@ -19,10 +22,24 @@ public sealed class KeyRotationBackgroundService(IServiceScopeFactory scopeFacto
                 {
                     logger.LogInformation("rotating keys for realm {realm}", realm.Name);
 
-                    /* !important: ensures the realm has at least one valid signing key before rotation */
                     await rotationService.EnsureSecretExistsAsync(realm, cancellation);
 
-                    await rotationService.RotateSecretAsync(realm, cancellation);
+                    var now = DateTime.UtcNow;
+                    var filters = SecretFilters.WithSpecifications()
+                        .WithRealm(realm.Id)
+                        .WithCanSign(now)
+                        .Build();
+
+                    var secrets = await secretCollection.GetSecretsAsync(filters, cancellation);
+                    var current = secrets
+                        .OrderByDescending(secret => secret.CreatedAt)
+                        .FirstOrDefault();
+
+                    if (current is not null && now - current.CreatedAt >= _rotationInterval)
+                    {
+                        await rotationService.RotateSecretAsync(realm, cancellation);
+                    }
+
                     await rotationService.PruneSecretsAsync(realm, cancellation);
                 }
                 catch (Exception exception)
@@ -31,7 +48,7 @@ public sealed class KeyRotationBackgroundService(IServiceScopeFactory scopeFacto
                 }
             });
 
-            await Task.Delay(TimeSpan.FromHours(24), stoppingToken);
+            await Task.Delay(_rotationInterval, stoppingToken);
         }
     }
 }
