@@ -447,4 +447,170 @@ public sealed class RealmEndpointTests(IntegrationEnvironmentFixture factory) :
         Assert.Equal(HttpStatusCode.NotFound, httpResponse.StatusCode);
         Assert.Equal(PermissionErrors.PermissionDoesNotExist, error);
     }
+
+    [Fact(DisplayName = "[e2e] - when GET /realms/{id}/secrets should return realm's active secrets")]
+    public async Task WhenGetRealmSecrets_ShouldReturnActiveSecrets()
+    {
+        /* arrange: authenticate user and get access token */
+        var httpClient = factory.HttpClient.WithRealmHeader("master");
+        var credentials = new AuthenticationCredentials
+        {
+            Username = "federation.testing.user",
+            Password = "federation.testing.password"
+        };
+
+        var authenticationResponse = await httpClient.PostAsJsonAsync("api/v1/identity/authenticate", credentials);
+        var authenticationResult = await authenticationResponse.Content.ReadFromJsonAsync<AuthenticationResult>();
+
+        Assert.NotNull(authenticationResult);
+        Assert.NotEmpty(authenticationResult.AccessToken);
+
+        httpClient.WithAuthorization(authenticationResult.AccessToken);
+
+        /* arrange: create a new realm */
+        var realmPayload = _fixture.Build<RealmCreationScheme>()
+            .With(realm => realm.Name, $"test-realm-{Guid.NewGuid()}")
+            .Create();
+
+        var realmResponse = await httpClient.PostAsJsonAsync("api/v1/realms", realmPayload);
+        var realm = await realmResponse.Content.ReadFromJsonAsync<RealmDetailsScheme>();
+
+        Assert.NotNull(realm);
+        Assert.Equal(HttpStatusCode.Created, realmResponse.StatusCode);
+
+        /* act: send GET request to retrieve realm's secrets */
+        var getResponse = await httpClient.GetAsync($"api/v1/realms/{realm.Id}/secrets");
+        var secrets = await getResponse.Content.ReadFromJsonAsync<IReadOnlyCollection<SecretScheme>>();
+
+        /* assert: response should be 200 OK */
+        Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
+        Assert.NotNull(secrets);
+
+        /* assert: should have at least one active secret */
+        Assert.NotEmpty(secrets);
+
+        /* assert: verify secret structure (no private/public key values) */
+        foreach (var secret in secrets)
+        {
+            Assert.NotNull(secret.Id);
+            Assert.True(secret.CreatedAt != default);
+        }
+    }
+
+    [Fact(DisplayName = "[e2e] - when GET /realms/{id}/secrets with non-existent realm should return 404 #ERROR-2FB9A")]
+    public async Task WhenGetRealmSecretsWithNonExistentRealm_ShouldReturnNotFound()
+    {
+        /* arrange: authenticate user and get access token */
+        var httpClient = factory.HttpClient.WithRealmHeader("master");
+        var credentials = new AuthenticationCredentials
+        {
+            Username = "federation.testing.user",
+            Password = "federation.testing.password"
+        };
+
+        var authenticationResponse = await httpClient.PostAsJsonAsync("api/v1/identity/authenticate", credentials);
+        var authenticationResult = await authenticationResponse.Content.ReadFromJsonAsync<AuthenticationResult>();
+
+        Assert.NotNull(authenticationResult);
+        Assert.NotEmpty(authenticationResult.AccessToken);
+
+        httpClient.WithAuthorization(authenticationResult.AccessToken);
+
+        /* arrange: prepare request with a non-existent realm ID */
+        var nonExistentRealmId = Guid.NewGuid().ToString();
+
+        /* act: send GET request for non-existent realm's secrets */
+        var response = await httpClient.GetAsync($"api/v1/realms/{nonExistentRealmId}/secrets");
+        var error = await response.Content.ReadFromJsonAsync<Error>();
+
+        /* assert: response should be 404 Not Found */
+        Assert.NotNull(error);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal(RealmErrors.RealmDoesNotExist.Code, error.Code);
+    }
+
+    [Fact(DisplayName = "[e2e] - when POST /realms/{id}/secrets/rotate should rotate secrets successfully")]
+    public async Task WhenPostRealmSecretsRotate_ShouldRotateSecretsSuccessfully()
+    {
+        /* arrange: authenticate user and get access token */
+        var httpClient = factory.HttpClient.WithRealmHeader("master");
+        var credentials = new AuthenticationCredentials
+        {
+            Username = "federation.testing.user",
+            Password = "federation.testing.password"
+        };
+
+        var authenticationResponse = await httpClient.PostAsJsonAsync("api/v1/identity/authenticate", credentials);
+        var authenticationResult = await authenticationResponse.Content.ReadFromJsonAsync<AuthenticationResult>();
+
+        Assert.NotNull(authenticationResult);
+        Assert.NotEmpty(authenticationResult.AccessToken);
+
+        httpClient.WithAuthorization(authenticationResult.AccessToken);
+
+        /* arrange: create a new realm */
+        var realmPayload = _fixture.Build<RealmCreationScheme>()
+            .With(realm => realm.Name, $"test-realm-{Guid.NewGuid()}")
+            .Create();
+
+        var realmResponse = await httpClient.PostAsJsonAsync("api/v1/realms", realmPayload);
+        var realm = await realmResponse.Content.ReadFromJsonAsync<RealmDetailsScheme>();
+
+        Assert.NotNull(realm);
+        Assert.Equal(HttpStatusCode.Created, realmResponse.StatusCode);
+
+        /* arrange: get secrets before rotation */
+        var getBeforeResponse = await httpClient.GetAsync($"api/v1/realms/{realm.Id}/secrets");
+        var secretsBefore = await getBeforeResponse.Content.ReadFromJsonAsync<IReadOnlyCollection<SecretScheme>>();
+
+        Assert.NotNull(secretsBefore);
+        var initialSecretCount = secretsBefore.Count;
+
+        /* act: send POST request to rotate secrets */
+        var rotateResponse = await httpClient.PostAsJsonAsync($"api/v1/realms/{realm.Id}/secrets/rotate", new { });
+
+        /* assert: response should be 204 No Content */
+        Assert.Equal(HttpStatusCode.NoContent, rotateResponse.StatusCode);
+
+        /* assert: verify new secret was created */
+        var getAfterResponse = await httpClient.GetAsync($"api/v1/realms/{realm.Id}/secrets");
+        var secretsAfter = await getAfterResponse.Content.ReadFromJsonAsync<IReadOnlyCollection<SecretScheme>>();
+
+        Assert.NotNull(secretsAfter);
+        Assert.True(secretsAfter.Count >= initialSecretCount, "New secret should be created after rotation");
+    }
+
+    [Fact(DisplayName = "[e2e] - when POST /realms/{id}/secrets/rotate with non-existent realm should return 404 #ERROR-2FB9A")]
+    public async Task WhenPostRealmSecretsRotateWithNonExistentRealm_ShouldReturnNotFound()
+    {
+        /* arrange: authenticate user and get access token */
+        var httpClient = factory.HttpClient.WithRealmHeader("master");
+        var credentials = new AuthenticationCredentials
+        {
+            Username = "federation.testing.user",
+            Password = "federation.testing.password"
+        };
+
+        var authenticationResponse = await httpClient.PostAsJsonAsync("api/v1/identity/authenticate", credentials);
+        var authenticationResult = await authenticationResponse.Content.ReadFromJsonAsync<AuthenticationResult>();
+
+        Assert.NotNull(authenticationResult);
+        Assert.NotEmpty(authenticationResult.AccessToken);
+
+        httpClient.WithAuthorization(authenticationResult.AccessToken);
+
+        /* arrange: prepare request with a non-existent realm ID */
+        var nonExistentRealmId = Guid.NewGuid().ToString();
+
+        /* act: send POST request to rotate secrets for non-existent realm */
+        var response = await httpClient.PostAsJsonAsync($"api/v1/realms/{nonExistentRealmId}/secrets/rotate", new { });
+        var error = await response.Content.ReadFromJsonAsync<Error>();
+
+        /* assert: response should be 404 Not Found */
+        Assert.NotNull(error);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal(RealmErrors.RealmDoesNotExist, error);
+    }
 }
