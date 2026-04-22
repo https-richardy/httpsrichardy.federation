@@ -11,6 +11,7 @@ public sealed class JwtSecurityTokenServiceTests : IClassFixture<MongoDatabaseFi
 
     private readonly Mock<IRealmProvider> _realmProvider = new();
     private readonly Mock<ISecretCollection> _secretCollection = new();
+    private readonly Mock<ISecretRotationService> _secretRotationService = new();
     private readonly Mock<IHostInformationProvider> _hostProvider = new();
     private readonly Mock<IGroupCollection> _groupCollection = new();
 
@@ -50,6 +51,7 @@ public sealed class JwtSecurityTokenServiceTests : IClassFixture<MongoDatabaseFi
             realmProvider: _realmProvider.Object,
             secretCollection: _secretCollection.Object,
             groupCollection: _groupCollection.Object,
+            secretRotationService: _secretRotationService.Object,
             tokenCollection: _tokenCollection,
             host: _hostProvider.Object
         );

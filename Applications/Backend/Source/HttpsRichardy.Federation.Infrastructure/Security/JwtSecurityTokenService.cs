@@ -5,6 +5,7 @@ public sealed class JwtSecurityTokenService(
     ITokenCollection tokenCollection,
     IRealmProvider realmProvider,
     IGroupCollection groupCollection,
+    ISecretRotationService secretRotationService,
     IHostInformationProvider host
 ) : ISecurityTokenService
 {
@@ -223,7 +224,17 @@ public sealed class JwtSecurityTokenService(
         var secrets = await secretCollection.GetSecretsAsync(filters, cancellation);
         var secret = secrets
             .OrderByDescending(secret => secret.CreatedAt)
-            .First();
+            .FirstOrDefault();
+
+        if (secret is null)
+        {
+            await secretRotationService.EnsureSecretExistsAsync(realm, cancellation);
+
+            secrets = await secretCollection.GetSecretsAsync(filters, cancellation);
+            secret = secrets
+                .OrderByDescending(secret => secret.CreatedAt)
+                .FirstOrDefault() ?? throw new InvalidOperationException($"no signing key available for realm '{realm.Id}'.");
+        }
 
         var key = Common.Utilities.RsaHelper.CreateSecurityKeyFromPrivateKey(secret.PrivateKey);
 

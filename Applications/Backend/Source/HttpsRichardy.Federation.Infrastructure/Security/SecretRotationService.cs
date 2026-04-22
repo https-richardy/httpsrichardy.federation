@@ -88,10 +88,11 @@ public sealed class SecretRotationService(ISecretCollection secretCollection) : 
             return;
         }
 
+        await CreateSecretAsync(realm, cancellation);
+
         current.ExpiresAt = now;
         current.GracePeriodEndsAt = now.Add(_gracePeriod);
 
         await secretCollection.UpdateAsync(current, cancellation: cancellation);
-        await CreateSecretAsync(realm, cancellation);
     }
 }

@@ -15,6 +15,7 @@ public sealed class AuthenticationServiceTests :
     private readonly Mock<IRealmProvider> _realmProvider = new();
     private readonly Mock<IHostInformationProvider> _hostProvider = new();
     private readonly Mock<ISecretCollection> _secretCollection = new();
+    private readonly Mock<ISecretRotationService> _secretRotationService = new();
     private readonly Mock<IGroupCollection> _groupCollection = new();
 
     public AuthenticationServiceTests(MongoDatabaseFixture mongoFixture)
@@ -56,6 +57,7 @@ public sealed class AuthenticationServiceTests :
             tokenCollection: tokenCollection,
             realmProvider: _realmProvider.Object,
             groupCollection: _groupCollection.Object,
+            secretRotationService: _secretRotationService.Object,
             host: _hostProvider.Object
         );
 
