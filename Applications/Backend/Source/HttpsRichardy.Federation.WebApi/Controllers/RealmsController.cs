@@ -72,6 +72,41 @@ public sealed class RealmsController(IDispatcher dispatcher) : ControllerBase
         };
     }
 
+    [HttpGet("{id}/secrets")]
+    [Authorize(Roles = Permissions.ViewRealms)]
+    [Stability(Stability.Stable)]
+    public async Task<IActionResult> GetRealmSecretsAsync([FromRoute] string id, [FromQuery] FetchRealmSecretsParameters request, CancellationToken cancellation)
+    {
+        var result = await dispatcher.DispatchAsync(request with { RealmId = id }, cancellation);
+
+        return result switch
+        {
+            { IsSuccess: true } when result.Data is not null =>
+                StatusCode(StatusCodes.Status200OK, result.Data),
+
+            { IsFailure: true } when result.Error == RealmErrors.RealmDoesNotExist =>
+                StatusCode(StatusCodes.Status404NotFound, result.Error),
+        };
+    }
+
+    [HttpPost("{id}/secrets/rotate")]
+    [Authorize(Roles = Permissions.EditRealm)]
+    [Stability(Stability.Stable)]
+    public async Task<IActionResult> RotateRealmSecretsAsync([FromRoute] string id, CancellationToken cancellation)
+    {
+        var request = new RotateRealmSecretsParameters { RealmId = id };
+        var result = await dispatcher.DispatchAsync(request, cancellation);
+
+        return result switch
+        {
+            { IsSuccess: true } =>
+                StatusCode(StatusCodes.Status204NoContent),
+
+            { IsFailure: true } when result.Error == RealmErrors.RealmDoesNotExist =>
+                StatusCode(StatusCodes.Status404NotFound, result.Error),
+        };
+    }
+
     [HttpGet("{id}/permissions")]
     [Authorize(Roles = Permissions.ViewPermissions)]
     [Stability(Stability.Stable)]

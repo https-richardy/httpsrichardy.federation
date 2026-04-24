@@ -1,13 +1,25 @@
 namespace HttpsRichardy.Federation.Application.Handlers.Connect;
 
-public sealed class FetchOpenIDConfigurationHandler(IHostInformationProvider host) :
+public sealed class FetchOpenIDConfigurationHandler(IHostInformationProvider host, IRealmCollection realmCollection) :
     IDispatchHandler<FetchOpenIDConfigurationParameters, Result<OpenIDConfigurationScheme>>
 {
-    public Task<Result<OpenIDConfigurationScheme>> HandleAsync(
+    public async Task<Result<OpenIDConfigurationScheme>> HandleAsync(
         FetchOpenIDConfigurationParameters parameters, CancellationToken cancellation = default)
     {
-        var configuration = ConnectMapper.AsConfiguration(host.Address);
+        var realmFilters = RealmFilters.WithSpecifications()
+            .WithName(parameters.Realm)
+            .Build();
 
-        return Task.FromResult(Result<OpenIDConfigurationScheme>.Success(configuration));
+        var realms = await realmCollection.GetRealmsAsync(realmFilters, cancellation);
+        var realm = realms.FirstOrDefault();
+
+        if (realm is null)
+        {
+            return Result<OpenIDConfigurationScheme>.Failure(RealmErrors.RealmDoesNotExist);
+        }
+
+        var configuration = ConnectMapper.AsConfiguration(host.Address, parameters.Realm);
+
+        return Result<OpenIDConfigurationScheme>.Success(configuration);
     }
 }

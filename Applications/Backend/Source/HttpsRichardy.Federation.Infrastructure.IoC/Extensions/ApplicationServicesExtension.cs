@@ -8,6 +8,7 @@ public static class ApplicationServicesExtension
         services.AddTransient<IPasswordHasher, PasswordHasher>();
         services.AddTransient<IAuthenticationService, AuthenticationService>();
         services.AddTransient<ISecurityTokenService, JwtSecurityTokenService>();
+        services.AddTransient<ISecretRotationService, SecretRotationService>();
         services.AddTransient<IClientCredentialsGenerator, ClientCredentialsGenerator>();
 
         services.AddTransient<IRedirectUriPolicy, RedirectUriPolicy>();

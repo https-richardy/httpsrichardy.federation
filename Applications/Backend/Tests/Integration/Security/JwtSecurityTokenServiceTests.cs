@@ -11,6 +11,7 @@ public sealed class JwtSecurityTokenServiceTests : IClassFixture<MongoDatabaseFi
 
     private readonly Mock<IRealmProvider> _realmProvider = new();
     private readonly Mock<ISecretCollection> _secretCollection = new();
+    private readonly Mock<ISecretRotationService> _secretRotationService = new();
     private readonly Mock<IHostInformationProvider> _hostProvider = new();
     private readonly Mock<IGroupCollection> _groupCollection = new();
 
@@ -27,8 +28,12 @@ public sealed class JwtSecurityTokenServiceTests : IClassFixture<MongoDatabaseFi
         var realm = _fixture.Create<Realm>();
         var secret = new Secret
         {
+            Id = Identifier.Generate<Secret>(),
+            RealmId = realm.Id,
             PrivateKey = Convert.ToBase64String(_rsa.ExportRSAPrivateKey()),
-            PublicKey = Convert.ToBase64String(_rsa.ExportRSAPublicKey())
+            PublicKey = Convert.ToBase64String(_rsa.ExportRSAPublicKey()),
+            CreatedAt = DateTime.UtcNow,
+            ExpiresAt = DateTime.UtcNow.AddDays(30)
         };
 
         _realmProvider.Setup(provider => provider.GetCurrentRealm())
@@ -39,13 +44,14 @@ public sealed class JwtSecurityTokenServiceTests : IClassFixture<MongoDatabaseFi
             .ReturnsAsync([]);
 
         _secretCollection
-            .Setup(collection => collection.GetSecretAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(secret);
+            .Setup(collection => collection.GetSecretsAsync(It.IsAny<SecretFilters>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([secret]);
 
         _jwtSecurityTokenService = new JwtSecurityTokenService(
             realmProvider: _realmProvider.Object,
             secretCollection: _secretCollection.Object,
             groupCollection: _groupCollection.Object,
+            secretRotationService: _secretRotationService.Object,
             tokenCollection: _tokenCollection,
             host: _hostProvider.Object
         );
@@ -132,7 +138,13 @@ public sealed class JwtSecurityTokenServiceTests : IClassFixture<MongoDatabaseFi
     {
         /* arrange: create an expired token */
 
-        var secret = await _secretCollection.Object.GetSecretAsync();
+        var secret = new Secret
+        {
+            Id = Identifier.Generate<Secret>(),
+            PrivateKey = Convert.ToBase64String(_rsa.ExportRSAPrivateKey()),
+            PublicKey = Convert.ToBase64String(_rsa.ExportRSAPublicKey())
+        };
+
         var privateKey = Common.Utilities.RsaHelper.CreateSecurityKeyFromPrivateKey(secret.PrivateKey);
 
         var tokenHandler = new JwtSecurityTokenHandler();

@@ -1,6 +1,7 @@
 global using System.Net;
 global using System.Net.Http.Headers;
 global using System.Net.Http.Json;
+global using System.Text.Json;
 
 global using System.IdentityModel.Tokens.Jwt;
 global using System.Security.Cryptography;
@@ -28,6 +29,7 @@ global using HttpsRichardy.Federation.Application.Payloads.User;
 global using HttpsRichardy.Federation.Application.Payloads.Realm;
 global using HttpsRichardy.Federation.Application.Payloads.Permission;
 global using HttpsRichardy.Federation.Application.Payloads.Group;
+global using HttpsRichardy.Federation.Application.Payloads.Secret;
 global using HttpsRichardy.Federation.Application.Payloads.Common;
 global using HttpsRichardy.Federation.Application.Payloads.Connect;
 global using HttpsRichardy.Federation.Application.Payloads.Client;

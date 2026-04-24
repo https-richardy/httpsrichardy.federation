@@ -1,3 +1,9 @@
+# 4.1.0 - 2026-04-24
+
+this release introduces per-realm key rotation, allowing each realm to manage and rotate its own signing keys independently.
+
+we also made all .well-known endpoints realm-specific. Accessing these endpoints now requires a realm name as part of the request, ensuring configuration and discovery metadata are resolved within the correct realm context.
+
 # 4.0.0 - 2026-04-20
 
 this release introduces full multi-client support per realm. In previous versions, a realm (tenant) was effectively treated as a single client, but starting in 4.0.0 each realm can manage multiple clients with their own credentials, permissions, flows, redirect uris, and audiences. We also added dedicated client management capabilities and support for multiple token audiences during issuance and validation.

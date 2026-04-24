@@ -11,6 +11,7 @@ public static class AuthenticationExtension
             .AddJwtBearer(configuration =>
             {
                 configuration.Authority = options.Authority;
+                configuration.MetadataAddress = $"{options.Authority}/{options.Realm}/.well-known/openid-configuration";
                 configuration.RequireHttpsMetadata = false;
                 configuration.TokenValidationParameters = new TokenValidationParameters
                 {

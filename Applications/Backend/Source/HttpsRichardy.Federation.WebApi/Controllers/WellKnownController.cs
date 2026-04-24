@@ -2,20 +2,22 @@ namespace HttpsRichardy.Federation.WebApi.Controllers;
 
 [ApiController]
 [ApiConventionType(typeof(WellKnownConventions))]
-[Route(".well-known")]
+[Route("{realm}/.well-known")]
 public sealed class WellKnownController(IDispatcher dispatcher) : ControllerBase
 {
     [HttpGet("openid-configuration")]
     [Stability(Stability.Stable)]
     public async Task<IActionResult> GetConfigurationAsync([FromQuery] FetchOpenIDConfigurationParameters request, CancellationToken cancellation)
     {
-        var result = await dispatcher.DispatchAsync(request, cancellation);
+        var result = await dispatcher.DispatchAsync(request with { Realm = (string)RouteData.Values["realm"]! }, cancellation);
 
-        // we know the switch here is not strictly necessary since we only handle the success case,
-        // but we keep it for consistency with the rest of the codebase and to follow established patterns.
         return result switch
         {
-            { IsSuccess: true } => StatusCode(StatusCodes.Status200OK, result.Data),
+            { IsSuccess: true } when result.Data is not null =>
+                StatusCode(StatusCodes.Status200OK, result.Data),
+
+            { IsFailure: true } when result.Error == RealmErrors.RealmDoesNotExist =>
+                StatusCode(StatusCodes.Status404NotFound, result.Error)
         };
     }
 
@@ -23,13 +25,15 @@ public sealed class WellKnownController(IDispatcher dispatcher) : ControllerBase
     [Stability(Stability.Stable)]
     public async Task<IActionResult> GetJsonWebKeysAsync([FromQuery] FetchJsonWebKeysParameters request, CancellationToken cancellation)
     {
-        var result = await dispatcher.DispatchAsync(request, cancellation);
+        var result = await dispatcher.DispatchAsync(request with { Realm = (string)RouteData.Values["realm"]! }, cancellation);
 
-        // we know the switch here is not strictly necessary since we only handle the success case,
-        // but we keep it for consistency with the rest of the codebase and to follow established patterns.
         return result switch
         {
-            { IsSuccess: true } => StatusCode(StatusCodes.Status200OK, result.Data),
+            { IsSuccess: true } when result.Data is not null =>
+                StatusCode(StatusCodes.Status200OK, result.Data),
+
+            { IsFailure: true } when result.Error == RealmErrors.RealmDoesNotExist =>
+                StatusCode(StatusCodes.Status404NotFound, result.Error)
         };
     }
 }

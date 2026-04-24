@@ -10,7 +10,7 @@ public sealed class WellKnownEndpointTests(IntegrationEnvironmentFixture factory
         var httpClient = factory.HttpClient;
 
         /* act: send GET request to open id configuration endpoint */
-        var response = await httpClient.GetAsync(".well-known/openid-configuration");
+        var response = await httpClient.GetAsync("master/.well-known/openid-configuration");
         var configuration = await response.Content.ReadFromJsonAsync<OpenIDConfigurationScheme>();
 
         /* assert: response should be 200 OK */
@@ -33,7 +33,7 @@ public sealed class WellKnownEndpointTests(IntegrationEnvironmentFixture factory
         var httpClient = factory.HttpClient;
 
         /* act: send GET request to OpenID configuration endpoint */
-        var response = await httpClient.GetAsync(".well-known/openid-configuration");
+        var response = await httpClient.GetAsync("master/.well-known/openid-configuration");
         var configuration = await response.Content.ReadFromJsonAsync<OpenIDConfigurationScheme>();
 
         /* assert: response should be 200 OK */
@@ -52,7 +52,7 @@ public sealed class WellKnownEndpointTests(IntegrationEnvironmentFixture factory
         var httpClient = factory.HttpClient;
 
         /* act: send GET request to OpenID configuration endpoint */
-        var response = await httpClient.GetAsync(".well-known/openid-configuration");
+        var response = await httpClient.GetAsync("master/.well-known/openid-configuration");
         var configuration = await response.Content.ReadFromJsonAsync<OpenIDConfigurationScheme>();
 
         /* assert: response should be 200 OK */
@@ -71,7 +71,7 @@ public sealed class WellKnownEndpointTests(IntegrationEnvironmentFixture factory
         var httpClient = factory.HttpClient;
 
         /* act: send GET request to OpenID configuration endpoint */
-        var response = await httpClient.GetAsync(".well-known/openid-configuration");
+        var response = await httpClient.GetAsync("master/.well-known/openid-configuration");
         var configuration = await response.Content.ReadFromJsonAsync<OpenIDConfigurationScheme>();
 
         /* assert: response should be 200 OK */
@@ -91,7 +91,7 @@ public sealed class WellKnownEndpointTests(IntegrationEnvironmentFixture factory
         var httpClient = factory.HttpClient;
 
         /* act: send GET request to JWKS endpoint */
-        var response = await httpClient.GetAsync(".well-known/jwks.json");
+        var response = await httpClient.GetAsync("master/.well-known/jwks.json");
         var jwks = await response.Content.ReadFromJsonAsync<JsonWebKeySetScheme>();
 
         /* assert: response should be 200 OK */
@@ -109,7 +109,7 @@ public sealed class WellKnownEndpointTests(IntegrationEnvironmentFixture factory
         var httpClient = factory.HttpClient;
 
         /* act: send GET request to JWKS endpoint */
-        var response = await httpClient.GetAsync(".well-known/jwks.json");
+        var response = await httpClient.GetAsync("master/.well-known/jwks.json");
         var jwks = await response.Content.ReadFromJsonAsync<JsonWebKeySetScheme>();
 
         /* assert: response should be 200 OK */
@@ -143,10 +143,10 @@ public sealed class WellKnownEndpointTests(IntegrationEnvironmentFixture factory
         var httpClient = factory.HttpClient;
 
         /* act: send GET request twice to JWKS endpoint */
-        var firstResponse = await httpClient.GetAsync(".well-known/jwks.json");
+        var firstResponse = await httpClient.GetAsync("master/.well-known/jwks.json");
         var firstJwks = await firstResponse.Content.ReadFromJsonAsync<JsonWebKeySetScheme>();
 
-        var secondResponse = await httpClient.GetAsync(".well-known/jwks.json");
+        var secondResponse = await httpClient.GetAsync("master/.well-known/jwks.json");
         var secondJwks = await secondResponse.Content.ReadFromJsonAsync<JsonWebKeySetScheme>();
 
         /* assert: both responses should be 200 OK */
@@ -168,7 +168,7 @@ public sealed class WellKnownEndpointTests(IntegrationEnvironmentFixture factory
         var httpClient = factory.HttpClient;
 
         /* act: send GET request to OpenID configuration endpoint */
-        var response = await httpClient.GetAsync(".well-known/openid-configuration");
+        var response = await httpClient.GetAsync("master/.well-known/openid-configuration");
         var configuration = await response.Content.ReadFromJsonAsync<OpenIDConfigurationScheme>();
 
         /* assert: response should be 200 OK */
@@ -192,7 +192,7 @@ public sealed class WellKnownEndpointTests(IntegrationEnvironmentFixture factory
         var httpClient = factory.HttpClient;
 
         /* act: send GET request to OpenID configuration endpoint */
-        var response = await httpClient.GetAsync(".well-known/openid-configuration");
+        var response = await httpClient.GetAsync("master/.well-known/openid-configuration");
         var configuration = await response.Content.ReadFromJsonAsync<OpenIDConfigurationScheme>();
 
         /* assert: response should be 200 OK */
