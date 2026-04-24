@@ -1,3 +1,9 @@
+# 4.2.0 - 2026-04-24
+
+this release introduces a fluent builder api to the sdk, making it more intuitive and expressive to construct filter parameters for client calls. previously, using parameter models required manual object initialization and explicit property assignment, which could become verbose as the number of filters grew. with the new fluent approach, developers can chain builder methods in a readable and intention-driven way, improving both usability and discoverability of the api.
+
+for example, instead of manually initializing a parameter object, you can now use a builder pattern and pass the result directly to the client method. this pattern is consistent across all filter types exposed by the sdk.
+
 # 4.1.0 - 2026-04-24
 
 this release introduces per-realm key rotation, allowing each realm to manage and rotate its own signing keys independently.
