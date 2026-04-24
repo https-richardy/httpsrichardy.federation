@@ -65,7 +65,7 @@ You can pull either:
 
 ```bash
 docker pull httpsrichardy/federation:latest
-docker pull httpsrichardy/federation:4.0.0
+docker pull httpsrichardy/federation:4.1.0
 ```
 
 To run the container, provide the required environment variables for database and administration bootstrap:
