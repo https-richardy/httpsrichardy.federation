@@ -33,6 +33,8 @@ The focus is on practical identity needs in real-world projects: issue useful to
 
 The Proxy is optional. If you need to handle cross-cutting concerns like quality of service controls and rate limiting, you can deploy it as an edge layer in front of the Backend. For simpler scenarios, you can run only the Backend and consume it directly without the Proxy.
 
+![architecture](https://i.ibb.co/jZ4XcGjN/federation-excalidarea.png)
+
 ## PACKAGE INSTALLATION (EXAMPLES)
 
 Install SDK packages in your .NET project:
