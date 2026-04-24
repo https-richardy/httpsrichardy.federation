@@ -13,7 +13,8 @@ public static class QueryParametersParser
         foreach (var property in properties)
         {
             var value = property.GetValue(instance);
-            if (value is null) continue;
+            if (value is null)
+                continue;
 
             string name = ToCamelCase(property.Name);
             string stringValue = value switch
