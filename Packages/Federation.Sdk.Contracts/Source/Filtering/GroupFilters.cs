@@ -1,4 +1,4 @@
-namespace HttpsRichardy.Federation.Sdk.Filtering;
+namespace HttpsRichardy.Federation.Sdk.Contracts.Filtering;
 
 public sealed class GroupFilters
 {
