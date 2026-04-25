@@ -1,3 +1,9 @@
+# 4.2.1 - 2026-04-25
+
+this patch fixes an issue in the authorization_code flow where the access token issued for an authenticated user did not include the allowed audiences configured on the requesting client. this created a mismatch between the client context that initiated authorization and the resulting user token.
+
+starting in 4.2.1, when a client obtains an authorization code and exchanges it for an access token, the generated user access token now includes all allowed audiences configured for that client. in the same flow, the authorization code is also bound to the client context to ensure exchange consistency.
+
 # 4.2.0 - 2026-04-24
 
 this release introduces a fluent builder api to the sdk, making it more intuitive and expressive to construct filter parameters for client calls. previously, using parameter models required manual object initialization and explicit property assignment, which could become verbose as the number of filters grew. with the new fluent approach, developers can chain builder methods in a readable and intention-driven way, improving both usability and discoverability of the api.

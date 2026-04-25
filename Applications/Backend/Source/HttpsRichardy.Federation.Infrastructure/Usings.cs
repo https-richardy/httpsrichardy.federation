@@ -10,6 +10,7 @@ global using HttpsRichardy.Internal.Essentials.Patterns;
 
 global using HttpsRichardy.Federation.Domain.Aggregates;
 global using HttpsRichardy.Federation.Domain.Errors;
+global using HttpsRichardy.Federation.Domain.Concepts;
 global using HttpsRichardy.Federation.Domain.Collections;
 global using HttpsRichardy.Federation.Domain.Filtering;
 global using HttpsRichardy.Federation.Domain.Filtering.Builders;
