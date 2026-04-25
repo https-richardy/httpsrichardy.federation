@@ -12,7 +12,7 @@ public sealed class JwtSecurityTokenService(
     private readonly TimeSpan _accessTokenDuration = TimeSpan.FromHours(2);
     private readonly TimeSpan _refreshTokenDuration = TimeSpan.FromDays(7);
 
-    public async Task<Result<SecurityToken>> GenerateAccessTokenAsync(User user, CancellationToken cancellation = default)
+    public async Task<Result<SecurityToken>> GenerateAccessTokenAsync(User user, IEnumerable<Audience> audiences, CancellationToken cancellation = default)
     {
         var filters = GroupFilters.WithSpecifications()
             .WithRealmId(user.RealmId)
@@ -31,6 +31,12 @@ public sealed class JwtSecurityTokenService(
             .ToList();
 
         var tokenHandler = new JwtSecurityTokenHandler();
+        var resolvedAudiences = audiences
+            .Where(audience => !string.IsNullOrWhiteSpace(audience.Value))
+            .Select(audience => audience.Value.Trim())
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+
         var claims = new ClaimsBuilder()
             .WithSubject(user.Id.ToString())
             .WithUsername(user.Username)
@@ -43,10 +49,15 @@ public sealed class JwtSecurityTokenService(
         claims.WithClaim(IdentityClaimNames.Realm, realm.Name);
         claims.WithClaim(IdentityClaimNames.RealmId, realm.Id);
 
+        if (resolvedAudiences.Count > 0)
+        {
+            claims.WithAudiences(resolvedAudiences);
+        }
+
         var claimsIdentity = new ClaimsIdentity(claims.Build());
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Audience = realm.Name,
+            Audience = resolvedAudiences.Count > 0 ? null : realm.Name,
             Subject = claimsIdentity,
             Issuer = host.Address.ToString().TrimEnd('/'),
             SigningCredentials = credentials,
@@ -65,6 +76,9 @@ public sealed class JwtSecurityTokenService(
 
         return Result<SecurityToken>.Success(securityToken);
     }
+
+    public async Task<Result<SecurityToken>> GenerateAccessTokenAsync(User user, CancellationToken cancellation = default)
+        => await GenerateAccessTokenAsync(user, [], cancellation);
 
     public async Task<Result<SecurityToken>> GenerateAccessTokenAsync(Client client, CancellationToken cancellation = default)
     {
