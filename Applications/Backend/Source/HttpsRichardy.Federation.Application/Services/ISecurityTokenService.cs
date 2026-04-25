@@ -8,6 +8,12 @@ public interface ISecurityTokenService
     );
 
     public Task<Result<SecurityToken>> GenerateAccessTokenAsync(
+        User user,
+        IEnumerable<Audience> audiences,
+        CancellationToken cancellation = default
+    );
+
+    public Task<Result<SecurityToken>> GenerateAccessTokenAsync(
         Client client,
         CancellationToken cancellation = default
     );
