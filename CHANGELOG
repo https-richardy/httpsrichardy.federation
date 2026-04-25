@@ -1,4 +1,4 @@
-# 4.2.1 - 2026-04-25
+# 4.2.5 - 2026-04-25
 
 this patch fixes an issue in the authorization_code flow where the access token issued for an authenticated user did not include the allowed audiences configured on the requesting client. this created a mismatch between the client context that initiated authorization and the resulting user token.
 
