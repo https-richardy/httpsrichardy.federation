@@ -284,6 +284,12 @@ public sealed class ConnectEndpointTests(IntegrationEnvironmentFixture factory) 
         Assert.NotEmpty(clients);
         Assert.NotNull(client);
 
+        // arrange: assign client audience
+        var assignAudience = new AssignClientAudienceScheme { Value = "backend.api" };
+        var assignAudienceResponse = await realmAdminClient.PostAsJsonAsync($"api/v1/clients/{client.Id}/audiences", assignAudience);
+
+        Assert.Equal(HttpStatusCode.OK, assignAudienceResponse.StatusCode);
+
         // arrange: create user for realm
         var credentials = new IdentityEnrollmentCredentials
         {
@@ -341,6 +347,7 @@ public sealed class ConnectEndpointTests(IntegrationEnvironmentFixture factory) 
             ExpiresAt = DateTime.UtcNow.AddMinutes(5),
             Metadata = new Dictionary<string, string>
             {
+                ["client.id"] = client.ClientId,
                 ["code.challenge"] = codeChallenge,
                 ["code.challenge.method"] = codeChallengeMethod
             }
@@ -367,5 +374,15 @@ public sealed class ConnectEndpointTests(IntegrationEnvironmentFixture factory) 
         // assert: response should be 200 OK
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotNull(grant);
+
+        var handler = new JwtSecurityTokenHandler();
+        var jwt = handler.ReadJwtToken(grant.AccessToken);
+        var audiences = jwt.Claims
+            .Where(claim => claim.Type == JwtRegisteredClaimNames.Aud)
+            .Select(claim => claim.Value)
+            .ToList();
+
+        Assert.Contains("backend.api", audiences);
+        Assert.DoesNotContain(realm.Name, audiences);
     }
 }
