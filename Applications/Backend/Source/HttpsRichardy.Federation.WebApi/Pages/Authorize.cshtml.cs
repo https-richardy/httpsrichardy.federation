@@ -121,6 +121,7 @@ public sealed class AuthorizePage : PageModel
         var code = Guid.NewGuid().ToString("N").ToUpperInvariant();
         var metadata = new Dictionary<string, string>
         {
+            { "client.id", Parameters.ClientId ?? string.Empty },
             { "code.challenge", Parameters.CodeChallenge ?? string.Empty },
             { "code.challenge.method", Parameters.CodeChallengeMethod ?? string.Empty }
         };
