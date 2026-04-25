@@ -1,6 +1,6 @@
 ﻿namespace HttpsRichardy.Federation.Application.Handlers.Authorization;
 
-public sealed class AuthorizationCodeGrantHandler(IRealmCollection realmCollection, IUserCollection userCollection, ISecurityTokenService tokenService, ITokenCollection tokenCollection) :
+public sealed class AuthorizationCodeGrantHandler(IRealmCollection realmCollection, IUserCollection userCollection, IClientCollection clientCollection, ISecurityTokenService tokenService, ITokenCollection tokenCollection) :
     IAuthorizationFlowHandler
 {
     public Grant Grant => Grant.AuthorizationCode;
@@ -38,6 +38,24 @@ public sealed class AuthorizationCodeGrantHandler(IRealmCollection realmCollecti
             return Result<ClientAuthenticationResult>.Failure(AuthenticationErrors.ClientNotFound);
         }
 
+        var clientFilters = new ClientFiltersBuilder()
+            .WithClientId(parameters.ClientId)
+            .Build();
+
+        var clients = await clientCollection.GetClientsAsync(clientFilters, cancellation: cancellation);
+        var client = clients.FirstOrDefault();
+
+        if (client is null || !string.Equals(client.RealmId, token.RealmId, StringComparison.Ordinal))
+        {
+            return Result<ClientAuthenticationResult>.Failure(AuthorizationErrors.InvalidAuthorizationCode);
+        }
+
+        var boundClientId = token.Metadata.GetValueOrDefault("client.id");
+        if (!string.Equals(boundClientId, parameters.ClientId, StringComparison.Ordinal))
+        {
+            return Result<ClientAuthenticationResult>.Failure(AuthorizationErrors.InvalidAuthorizationCode);
+        }
+
         var codeChallenge = token.Metadata.GetValueOrDefault("code.challenge")!;
         var codeChallengeMethod = token.Metadata.GetValueOrDefault("code.challenge.method")!;
 
@@ -58,7 +76,7 @@ public sealed class AuthorizationCodeGrantHandler(IRealmCollection realmCollecti
             return Result<ClientAuthenticationResult>.Failure(AuthenticationErrors.UserNotFound);
         }
 
-        var tokenResult = await tokenService.GenerateAccessTokenAsync(user, cancellation);
+        var tokenResult = await tokenService.GenerateAccessTokenAsync(user, client.Audiences, cancellation);
         if (tokenResult.IsFailure || tokenResult.Data is null)
         {
             return Result<ClientAuthenticationResult>.Failure(tokenResult.Error);
