@@ -27,6 +27,12 @@ public sealed class ClientAuthenticationCredentialsValidator : AbstractValidator
 
         When(credential => credential.GrantType == SupportedGrantType.AuthorizationCode, () =>
         {
+            RuleFor(credential => credential.ClientId)
+                .NotEmpty()
+                .WithMessage("client identifier must not be empty.")
+                .MaximumLength(200)
+                .WithMessage("client identifier must be at most 200 characters long.");
+
             RuleFor(credential => credential.Code)
                 .NotEmpty()
                 .WithMessage("code must not be empty.");
