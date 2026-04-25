@@ -98,6 +98,43 @@ public sealed class JwtSecurityTokenServiceTests : IClassFixture<MongoDatabaseFi
         }
     }
 
+    [Fact(DisplayName = "[infrastructure] - when generating user access token with provided audiences, then token should include only provided audiences")]
+    public async Task WhenGeneratingUserAccessTokenWithProvidedAudiences_ThenShouldIncludeOnlyProvidedAudiences()
+    {
+        /* arrange: create a user and configure realm */
+        var user = _fixture.Create<User>();
+        var realm = _fixture.Create<Realm>();
+
+        _realmProvider.Setup(provider => provider.GetCurrentRealm())
+            .Returns(realm);
+
+        var allowedAudiences = new[]
+        {
+            new Audience("backend.api"),
+            new Audience("orders.api"),
+            new Audience("backend.api")
+        };
+
+        /* act: generate an access token with explicit audiences */
+        var result = await _jwtSecurityTokenService.GenerateAccessTokenAsync(user, allowedAudiences);
+
+        /* assert: token must be successful and valid */
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Data);
+
+        var handler = new JwtSecurityTokenHandler();
+        var jwtToken = handler.ReadJwtToken(result.Data.Value);
+
+        var audiences = jwtToken.Claims
+            .Where(claim => claim.Type == JwtRegisteredClaimNames.Aud)
+            .Select(claim => claim.Value)
+            .ToList();
+
+        Assert.Contains("backend.api", audiences);
+        Assert.Contains("orders.api", audiences);
+        Assert.Equal(2, audiences.Distinct(StringComparer.Ordinal).Count());
+    }
+
     [Fact(DisplayName = "[infrastructure] - when generating a refresh token, then it must be valid and contain correct claims and be persisted")]
     public async Task WhenGeneratingRefreshToken_ThenItMustBeValidAndContainCorrectClaimsAndBePersisted()
     {
